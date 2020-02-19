@@ -3,6 +3,15 @@ before:
     - go mod tidy
 builds:
 - main: ./cmd/fur
+  goos:
+    - darwin
+    - linux
+    - windows
+  goarch:
+    - amd64
+    - 386
+    - arm
+    - arm64
   env:
     - CGO_ENABLED=0
   flags:
