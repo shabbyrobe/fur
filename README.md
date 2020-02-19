@@ -1,0 +1,90 @@
+Fur: command-line Gopher client
+===============================
+
+This is my crappy command line Gopher client.
+
+This project exists only as a scratchpad for me to experiment with the Gopher
+protocol, which I am interested in/fascinated by for absolutely no good reason
+whatsoever. There are better libraries and tools around, with better levels of
+completeness. Probably better to use those.
+
+I shoved some nice things in here because it was easy:
+
+- HTML rendering using (a fork of) https://github.com/MichaelMure/go-term-markdown/
+- Image rendering for `I` and `g` types using https://github.com/shabbyrobe/termimg/
+- Automatic unpacking of UUEncoded (`6`) types, which I added before I noticed that
+  I can't find anything that uses `6` anywhere.
+
+The experiments I'm currently looking at:
+
+- CAPS file handling
+- TLS
+- Gopher Plus
+- Error handling
+- Fixing DotReader to ignore _all_ trailing '.\n' lines, not just the first.
+
+## Expectation Management
+
+Feel free to use this or take bits from it as you see fit (MIT license == go
+nuts). I won't maintain this to any kind of standard though. This is a
+scratchpad and a bit of fun for me, not a product. Issues may be responded to
+whenever I happen to get around to them, but PRs are unlikely to be accepted.
+
+## Install
+
+Source only:
+
+    go install ./cmd/fur
+
+## Using
+
+Easy!
+
+    $ fur gopher.floodgap.com
+    $ fur gopher://gopher.floodgap.com
+    $ fur hngopher.com
+    $ fur -x=i search "hacker news"
+
+Then if you see a link, just copy and paste it in a subsequent invocation to `fur`.
+
+To get the raw output, use the `--raw` flag.
+
+HTML item types (`h`) work best if you have `w3m` installed.
+
+## Links
+
+Gopher sites:
+
+- [GopherPedia](gopher://gopherpedia.com/)
+- [Floodgap](gopher://gopher.floodgap.com/)
+- [SDF Public Access UNIX System](gopher://sdf.org/)
+- [Large list of known gopher servers](gopher://gopher.floodgap.com/1/world)
+- [Search Gopher with Veronica-2](gopher://gopher.floodgap.com/7/v2/vs)
+- [Hacker News](gopher://hngopher.com/)
+
+Gopher history:
+
+- https://tedium.co/2017/06/22/modern-day-gopher-history/
+- https://ils.unc.edu/callee/gopherpaper.htm
+- https://arstechnica.com/tech-policy/2009/11/the-web-may-have-won-but-gopher-tunnels-on/
+- http://gopher.floodgap.com/overbite/relevance.html
+
+Server software:
+
+- https://github.com/gophernicus/gophernicus
+
+Gopher protocol:
+
+- https://tools.ietf.org/html/rfc1436
+- https://sdfeu.org/w/tutorials:gopher
+- gopher://gopher.floodgap.com/0/gopher/tech/gopherplus.txt
+- https://tools.ietf.org/html/draft-matavka-gopher-ii-03
+- https://groups.google.com/forum/#!msg/comp.sys.mac.announce/xbgsusdfETc/S2793OidrSQJ
+- https://lists.debian.org/gopher-project/2018/02/msg00038.html
+
+TLS:
+
+- https://dataswamp.org/~solene/2019-03-07-gopher-server-tls.html
+- https://alexschroeder.ch/wiki/Comments_on_2018-01-10_Encrypted_Gopher
+- https://github.com/0x16h/gopher-tls/
+
