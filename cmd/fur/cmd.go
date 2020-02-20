@@ -29,9 +29,12 @@ via the '--search' flag or the '<search>' argument.
 `
 
 type command struct {
-	timeout     time.Duration
-	url         string
-	raw         bool
+	timeout time.Duration
+	url     string
+
+	raw bool // Raw mode
+	txt bool // Raw text mode
+
 	search      string
 	json        bool
 	outFile     string
@@ -89,7 +92,8 @@ func (cmd *command) Help() cmdy.Help {
 }
 
 func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
-	flags.BoolVar(&cmd.raw, "raw", false, `Raw mode; bypass all fancy rendering and print the raw bytes (will include '.\r\n' termination lines if present)`)
+	flags.BoolVar(&cmd.raw, "raw", false, `Raw mode; bypass all fancy rendering and print the raw bytes off the wire (will include '.\r\n' termination lines if present). Exclusive with -txt.`)
+	flags.BoolVar(&cmd.txt, "txt", false, `Raw text mode; bypass all fancy rendering, but decode as text (dot-escaped). Exclusive with -raw.`)
 
 	//  Useful for servers that misuse the '1' item type and just prepend 'i' to every line of a random file regardless of what it contains
 	flags.IntVar(&cmd.lcut, "lcut", 0, "In raw mode, cut this many chars off the left.")
@@ -162,7 +166,9 @@ func (cmd *command) outFileName(u gopher.URL) string {
 
 func (cmd *command) Run(ctx cmdy.Context) error {
 	if cmd.raw {
-		return cmd.runRaw(ctx)
+		return cmd.runRaw(ctx, true)
+	} else if cmd.txt {
+		return cmd.runRaw(ctx, false)
 	} else {
 		return cmd.runClient(ctx)
 	}
@@ -277,8 +283,12 @@ func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 
 	client := cmd.Client()
 
+	var gopherErr *gopher.Error
+
 	rs, err := client.Fetch(ctx, u)
-	if err != nil {
+	if errors.As(err, &gopherErr) {
+		return cmdy.ErrWithCode(exitCode(gopherErr.Status, 2), err)
+	} else if err != nil {
 		return err
 	}
 	defer DeferClose(&rerr, rs)
@@ -302,7 +312,7 @@ func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 	return rnd.Render(out, rs)
 }
 
-func (cmd *command) runRaw(ctx cmdy.Context) (rerr error) {
+func (cmd *command) runRaw(ctx cmdy.Context, bin bool) (rerr error) {
 	client := cmd.Client()
 
 	u, err := cmd.URL()
@@ -310,11 +320,15 @@ func (cmd *command) runRaw(ctx cmdy.Context) (rerr error) {
 		return err
 	}
 
-	rs, err := client.Binary(ctx, u)
+	rs, err := client.Raw(ctx, u)
 	if err != nil {
 		return err
 	}
 	defer rs.Close()
+	var rdr io.Reader = rs.Reader()
+	if !bin {
+		rdr = gopher.DotReader(rdr)
+	}
 
 	outFile := cmd.outFileName(u)
 	out, isFile, err := stdoutOrFileWriter(ctx.Stdout(), outFile, true)
@@ -328,12 +342,12 @@ func (cmd *command) runRaw(ctx cmdy.Context) (rerr error) {
 	}
 
 	if cmd.lcut == 0 {
-		if _, err := io.Copy(out, rs); err != nil {
+		if _, err := io.Copy(out, rdr); err != nil {
 			return err
 		}
 
 	} else {
-		return copyWithLcut(out, rs, cmd.lcut)
+		return copyWithLcut(out, rdr, cmd.lcut)
 	}
 
 	return nil

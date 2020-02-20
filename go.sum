@@ -2,6 +2,7 @@ github.com/MichaelMure/go-term-text v0.2.6 h1:dSmJSzk2iI5xWymSMrMbdVM1bxYWu3DjDF
 github.com/MichaelMure/go-term-text v0.2.6/go.mod h1:o2Z5T3b28F4kwAojGvvNdbzjHf9t18vbQ7E2pmTe2Ww=
 github.com/bbrks/wrap v2.3.0+incompatible h1:9ebLuiUC/fBSu6OeOdD6XG8WRjf3G+wSJO1YZPU2O9I=
 github.com/bbrks/wrap v2.3.0+incompatible/go.mod h1:rc//8Fguf02+4sm0fBMyG1TrAaEhe6VTYM35MY10oO4=
+github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fatih/color v1.9.0 h1:8xPHl4/q1VyqGIPif1F+1V3Y3lSmrq01EabUW3CoW5s=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=

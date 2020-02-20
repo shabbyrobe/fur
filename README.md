@@ -20,8 +20,6 @@ The experiments I'm currently looking at:
 - CAPS file handling
 - TLS
 - Gopher Plus
-- Error handling
-- Fixing DotReader to ignore _all_ trailing '.\n' lines, not just the first.
 
 ## Expectation Management
 

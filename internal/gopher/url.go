@@ -37,6 +37,10 @@ func (u URL) WWW() (url string, ok bool) {
 	return "", false
 }
 
+func (u URL) CanFetch() bool {
+	return u.ItemType.CanFetch() && !IsWellKnownDummyHostname(u.Hostname)
+}
+
 func (u URL) Host() string {
 	p := u.Port
 	if p == 0 {

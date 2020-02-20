@@ -10,19 +10,19 @@ import (
 )
 
 var defaultIcons = [256]rune{
-	gopher.Search:     '🔍',
-	gopher.Dir:        '📂',
-	gopher.File:       '📄',
-	gopher.Sound:      '🔈',
-	gopher.CSOServer:  '📞',
-	gopher.Image:      '📷',
-	gopher.GIF:        '📷',
-	gopher.Binary:     '💾',
-	gopher.DOSArchive: '💾',
-	gopher.BinHex:     '💾',
-	gopher.UUEncoded:  '💾',
-	gopher.Telnet:     '📺',
-	gopher.TN3270:     '📺',
+	gopher.Search:        '🔍',
+	gopher.Dir:           '📂',
+	gopher.Text:          '📄',
+	gopher.Sound:         '🔈',
+	gopher.CSOServer:     '📞',
+	gopher.Image:         '📷',
+	gopher.GIF:           '📷',
+	gopher.Binary:        '💾',
+	gopher.BinaryArchive: '💾',
+	gopher.BinHex:        '💾',
+	gopher.UUEncoded:     '💾',
+	gopher.Telnet:        '📺',
+	gopher.TN3270:        '📺',
 }
 
 var itemColors = [256]string{}
