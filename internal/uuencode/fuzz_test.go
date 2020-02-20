@@ -25,8 +25,8 @@ func parseInts(s string) (out []int) {
 	return out
 }
 
-func TestFuzz(t *testing.T) {
-	max := 4096
+func TestRandomWriteRead(t *testing.T) {
+	max := 2049
 	var ioSizes, dataSizes []int
 
 	if os.Getenv("UU_IO_SIZES") != "" {
@@ -48,8 +48,8 @@ func TestFuzz(t *testing.T) {
 		dataSizes = parseInts(os.Getenv("UU_DATA_SIZES"))
 
 	} else {
-		dataSizes = append(dataSizes, 0, 1, 2, 3, 1024, 2048, max)
-		for i := 4; i < max; i++ {
+		dataSizes = append(dataSizes, max)
+		for i := 1; i < max; i++ {
 			dataSizes = append(dataSizes, i)
 		}
 	}
