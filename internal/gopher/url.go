@@ -103,13 +103,22 @@ func (u URL) Parts() map[string]interface{} {
 }
 
 func IsWellKnownDummyHostname(s string) bool {
+	s = strings.TrimSpace(s)
+
+	// This is a collection of strings seen in real-world gopher servers
+	// that indicate the hostname is a dummy:
 	return s == "error.host" ||
 		s == "fakeserver" ||
 		s == "Error" ||
 		s == "none" ||
 		s == "fake" ||
 		s == "(NULL)" ||
-		s == "(FALSE)"
+		s == "(FALSE)" ||
+		s == "invalid" || // RFC2606 hostnames: https://tools.ietf.org/html/rfc2606
+		s == "example" ||
+		s == "." ||
+		strings.HasSuffix(s, ".invalid") ||
+		strings.HasSuffix(s, ".example")
 }
 
 func escape(s string) string {
