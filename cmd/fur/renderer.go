@@ -77,6 +77,8 @@ func (d *dirRenderer) Render(out io.Writer, rs gopher.Response) error {
 	i := 0
 	emptyLeft := d.maxEmpty
 
+	var lset byteSet
+
 	for drs.Next(&dirent) {
 		if !d.items[dirent.ItemType] {
 			continue
@@ -103,7 +105,14 @@ func (d *dirRenderer) Render(out io.Writer, rs gopher.Response) error {
 
 		switch dirent.ItemType {
 		case gopher.Info:
-			fmt.Fprintf(out, "%s\033[38;5;250m%s\033[m\n", indent, dwrap)
+			// XXX: We can get a lot fancier than this if we buffer a few dirents; we can
+			// scale the threshold down based on how many lines before or after contain
+			// ASCII. We can also try to detect HRs and color them separately.
+			if asciiConfidence(dirent.Display, &lset) > 0.5 {
+				fmt.Fprintf(out, "%s\033[38;5;96m%s\033[m\n", indent, dwrap)
+			} else {
+				fmt.Fprintf(out, "%s\033[38;5;250m%s\033[m\n", indent, dwrap)
+			}
 
 		default:
 			var c rune = icons[dirent.ItemType]
@@ -126,4 +135,23 @@ func (d *dirRenderer) Render(out io.Writer, rs gopher.Response) error {
 	}
 
 	return nil
+}
+
+var (
+	symbolSet = newByteSet("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+	spaceSet  = newByteSet(" \r\t\n")
+)
+
+func asciiConfidence(in string, lset *byteSet) float64 {
+	lset.SetString(in)
+	lset.AndNot(spaceSet)
+	inCnt := lset.Count()
+
+	lset.And(symbolSet)
+
+	var asciiConfidence float64
+	if inCnt > 0 {
+		asciiConfidence = float64(lset.Count()) / float64(inCnt)
+	}
+	return asciiConfidence
 }
