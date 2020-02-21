@@ -13,6 +13,7 @@ import (
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/arg"
 	"github.com/shabbyrobe/cmdy/flags"
+	"github.com/shabbyrobe/fur/internal/furball"
 	"github.com/shabbyrobe/fur/internal/gopher"
 )
 
@@ -47,6 +48,8 @@ type command struct {
 	exclude     flags.StringList
 	maxEmpty    int
 	cols        int
+	ballFile    string
+	ball        *furball.Ball
 }
 
 func (cmd *command) Help() cmdy.Help {
@@ -92,8 +95,12 @@ func (cmd *command) Help() cmdy.Help {
 }
 
 func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
-	flags.BoolVar(&cmd.raw, "raw", false, `Raw mode; bypass all fancy rendering and print the raw bytes off the wire (will include '.\r\n' termination lines if present). Exclusive with -txt.`)
-	flags.BoolVar(&cmd.txt, "txt", false, `Raw text mode; bypass all fancy rendering, but decode as text (dot-escaped). Exclusive with -raw.`)
+	flags.BoolVar(&cmd.raw, "raw", false, ``+
+		`Raw mode; bypass all fancy rendering and print the raw bytes off the wire (will include '.\r\n' termination lines if present). Exclusive with -txt.`)
+	flags.BoolVar(&cmd.txt, "txt", false, ``+
+		`Raw text mode; bypass all fancy rendering, but decode as text (dot-escaped). Exclusive with -raw.`)
+	flags.StringVar(&cmd.ballFile, "ball", "", ``+
+		`Append request to this furball (like HAR, but crappier)`)
 
 	//  Useful for servers that misuse the '1' item type and just prepend 'i' to every line of a random file regardless of what it contains
 	flags.IntVar(&cmd.lcut, "lcut", 0, "In raw mode, cut this many chars off the left.")
@@ -131,7 +138,8 @@ func (cmd *command) URL() (gopher.URL, error) {
 
 func (cmd *command) Client() *gopher.Client {
 	return &gopher.Client{
-		Timeout: cmd.timeout,
+		Recorder: cmd.ball,
+		Timeout:  cmd.timeout,
 	}
 }
 
@@ -164,7 +172,26 @@ func (cmd *command) outFileName(u gopher.URL) string {
 	}
 }
 
-func (cmd *command) Run(ctx cmdy.Context) error {
+func (cmd *command) Run(ctx cmdy.Context) (err error) {
+	if cmd.ballFile != "" {
+		cmd.ball, err = furball.LoadBallFile(cmd.ballFile)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("fur: could not load ball %q: %w", cmd.ball, err)
+		}
+		if cmd.ball == nil {
+			cmd.ball = &furball.Ball{}
+		}
+
+		n := len(cmd.ball.Entries)
+		defer func() {
+			if len(cmd.ball.Entries) != n {
+				if serr := furball.SaveBallFile(cmd.ball, cmd.ballFile); serr != nil && err == nil {
+					err = serr
+				}
+			}
+		}()
+	}
+
 	if cmd.raw {
 		return cmd.runRaw(ctx, true)
 	} else if cmd.txt {
@@ -172,6 +199,7 @@ func (cmd *command) Run(ctx cmdy.Context) error {
 	} else {
 		return cmd.runClient(ctx)
 	}
+
 	return nil
 }
 

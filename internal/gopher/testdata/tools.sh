@@ -12,6 +12,21 @@ sels=(
     "1/world/search-hosts%3Fblack%20club%20life%20moe%20name%20ninja%20online%20productions%20solutions%20space%20technology%20tips%20town%20works%20zone%20party%20engineering"
 )
 
+dl-save() {
+    url="$1"
+    fname="$2"
+
+    if ! out="$( fur --txt "$url" )"; then
+        return 1
+    fi
+
+    {
+        date +%s
+        echo "$url"
+        echo -n "$out"
+    } > "$fname"
+}
+
 cmd-hosts() {
     for sel in "${sels[@]}"; do
         fur -x=i -j gopher://gopher.floodgap.com/"$sel" |
@@ -19,25 +34,19 @@ cmd-hosts() {
     done
 }
 
-cmd-caps() {
-    fur gopher://"$1"/0caps.txt
-}
-
-cmd-robots() {
-    fur gopher://"$1"/0robots.txt
-}
-
 cmd-caps-all() {
-    cmd-hosts | while read -r line; do
-        echo "$line"
-        cmd-caps "$line" > "caps-$line.txt" || true
+    cmd-hosts | while read -r host; do
+        echo "$host"
+        url="gopher://$host/0caps.txt"
+        dl-save "$url" "caps-$host.txt" || true
     done
 }
 
 cmd-robots-all() {
-    cmd-hosts | while read -r line; do
-        echo "$line"
-        cmd-robots "$line" > "robots-$line.txt" || true
+    cmd-hosts | while read -r host; do
+        echo "$host"
+        url="gopher://$host/0robots.txt"
+        dl-save "$url" "robots-$host.txt" || true
     done
 }
 

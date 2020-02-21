@@ -14,6 +14,7 @@ I shoved some nice things in here because it was easy:
 - Image rendering for `I` and `g` types using https://github.com/shabbyrobe/termimg/
 - Automatic unpacking of UUEncoded (`6`) types, which I added before I noticed that
   I can't find anything that uses `6` anywhere.
+- Error detection
 
 The experiments I'm currently looking at:
 
@@ -60,8 +61,9 @@ Gopher sites:
 - [Search Gopher with Veronica-2](gopher://gopher.floodgap.com/7/v2/vs)
 - [Hacker News](gopher://hngopher.com/)
 
-Gopher history:
+Gopher history/general:
 
+- gopher://gopher.viste.fr/1/gopher-faq
 - https://tedium.co/2017/06/22/modern-day-gopher-history/
 - https://ils.unc.edu/callee/gopherpaper.htm
 - https://arstechnica.com/tech-policy/2009/11/the-web-may-have-won-but-gopher-tunnels-on/
@@ -72,6 +74,11 @@ Server software:
 
 - https://github.com/gophernicus/gophernicus
 - https://github.com/muffinista/gopher2000/
+- https://github.com/knusbaum/cl-gopher
+- http://motsognir.sourceforge.net/
+- https://github.com/spc476/port70
+- https://github.com/jgoerzen/pygopherd
+- https://github.com/asterIRC/uGopherServer
 
 Gopher protocol:
 
@@ -87,4 +94,15 @@ TLS:
 - https://dataswamp.org/~solene/2019-03-07-gopher-server-tls.html
 - https://alexschroeder.ch/wiki/Comments_on_2018-01-10_Encrypted_Gopher
 - https://github.com/0x16h/gopher-tls/
+- https://news.ycombinator.com/item?id=20171646
+- gopher://tilde.team/0/~rain1/phlog/20190608-encrypting-gopher.txt
+
+Crawlers:
+
+- gopher://gopherproject.org/1/eomyidae
+
+Clients:
+
+- https://thelambdalab.xyz/elpher/
+- https://rawtext.club/~sloum/bombadillo.html (https://tildegit.org/sloum/bombadillo)
 

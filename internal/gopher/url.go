@@ -93,6 +93,19 @@ func (u URL) String() string {
 	return out.String()
 }
 
+func (u URL) MarshalText() ([]byte, error) {
+	return []byte(u.String()), nil
+}
+
+func (u *URL) UnmarshalText(b []byte) error {
+	v, err := ParseURL(string(b))
+	if err != nil {
+		return err
+	}
+	*u = v
+	return nil
+}
+
 func (u URL) Parts() map[string]interface{} {
 	// XXX: this is just here to make it easier to dump
 	m := make(map[string]interface{}, 7)

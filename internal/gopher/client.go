@@ -17,6 +17,8 @@ type Client struct {
 
 	// Disables error interception. Warning: subject to change.
 	DisableErrorIntercept bool
+
+	Recorder Recorder
 }
 
 func (c *Client) timeoutDial() time.Duration {
@@ -51,15 +53,20 @@ func (c *Client) dial(ctx context.Context, u URL) (*net.TCPConn, error) {
 // Callers must use the reader returned by this function rather than the conn to read
 // the response.
 func (c *Client) send(ctx context.Context, conn conn, u URL, at time.Time, interceptErrors bool) (conn, error) {
-	deadliner := conn.(deadliner)
+	var rec Recording
 
-	if err := deadliner.SetWriteDeadline(at.Add(c.timeoutWrite())); err != nil {
+	if c.Recorder != nil {
+		rec = c.Recorder.BeginRecording(u, at)
+		conn = recordConn(rec, conn)
+	}
+
+	if err := conn.SetWriteDeadline(at.Add(c.timeoutWrite())); err != nil {
 		return conn, err
 	}
 	if _, err := conn.Write([]byte(u.Query())); err != nil {
 		return conn, err
 	}
-	if err := deadliner.SetReadDeadline(at.Add(c.timeoutRead())); err != nil {
+	if err := conn.SetReadDeadline(at.Add(c.timeoutRead())); err != nil {
 		return conn, err
 	}
 
@@ -90,6 +97,9 @@ func (c *Client) send(ctx context.Context, conn conn, u URL, at time.Time, inter
 
 		scratch = scratch[:n]
 		rsErr := interceptError(scratch, func(status Status, msg string, confidence float64) *Error {
+			if rec != nil {
+				rec.SetStatus(status, msg)
+			}
 			return NewError(u, status, msg, confidence)
 		})
 		if rsErr != nil {
@@ -192,9 +202,7 @@ type conn interface {
 	io.Reader
 	io.Writer
 	io.Closer
-}
 
-type deadliner interface {
 	SetReadDeadline(t time.Time) error
 	SetWriteDeadline(t time.Time) error
 }
