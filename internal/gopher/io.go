@@ -42,3 +42,13 @@ func (r *expectedUnexpectedEOFReader) Read(b []byte) (n int, err error) {
 	}
 	return n, err
 }
+
+type nilReadCloser struct{}
+
+func (rc nilReadCloser) Read(b []byte) (n int, err error) {
+	return 0, io.EOF
+}
+
+func (rc nilReadCloser) Close() error {
+	return nil
+}

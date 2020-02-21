@@ -2,7 +2,6 @@ package gopher
 
 import (
 	"bytes"
-	"io"
 	"regexp"
 )
 
@@ -176,6 +175,72 @@ func extractDirentError(data []byte) (status Status, msg string, found bool) {
 	return 0, "", false
 }
 
+var (
+	errorPrefixMatcher = errorMatcherBuild([][]byte{
+		[]byte("an error occurred:"),
+		[]byte("error:"),
+		[]byte("file:"),
+	})
+
+	errorPatternLoose = regexp.MustCompile(`` +
+		`(?i)` +
+		`(` +
+		`\bnot found\b` +
+		`|` +
+		`resource .*? does not exist` +
+		`)` +
+		``)
+)
+
+func errorMatcherBuild(msgs [][]byte) *errorMatcherNode {
+	node := &errorMatcherNode{}
+	for _, msg := range msgs {
+		cur := node
+		for _, b := range msg {
+			if cur.next[b] == nil {
+				cur.next[b] = &errorMatcherNode{}
+			}
+			cur = cur.next[b]
+		}
+		cur.match = true
+	}
+	return node
+}
+
+type errorMatcherNode struct {
+	next  [256]*errorMatcherNode
+	match bool
+}
+
+func (node *errorMatcherNode) Find(buf []byte) (found bool, n int) {
+	cur := node
+	for idx, b := range buf {
+		b = caseFold[b]
+		if cur.next[b] == nil {
+			break
+		}
+		cur = cur.next[b]
+		if cur.match {
+			found = true
+			n = idx
+		}
+	}
+
+	return found, n
+}
+
+var caseFold = [256]byte{}
+
+func init() {
+	for i := 0; i < 256; i++ {
+		b := byte(i)
+		if b >= 'A' && b <= 'Z' {
+			b += 'a' - 'A'
+		}
+		caseFold[i] = b
+	}
+}
+
 // errorTrimRight trims bytes, rather than runes, off a byte slice
 func errorTrimRightWsp(in []byte, sz int) []byte {
 	if sz == 0 {
@@ -208,80 +273,4 @@ func errorTrimRightCRLF(in []byte, sz int) []byte {
 		}
 	}
 	return in[:end]
-}
-
-var (
-	errorPatternLoose = regexp.MustCompile(`` +
-		`(?i)` +
-		`(` +
-		`\bnot found\b` +
-		`|` +
-		`resource .*? does not exist` +
-		`)` +
-		``)
-
-	errorPrefixMatcher = errorMatcherBuild([][]byte{
-		[]byte("an error occurred:"),
-		[]byte("error:"),
-		[]byte("file:"),
-	})
-)
-
-func errorMatcherBuild(msgs [][]byte) *errorNode {
-	node := &errorNode{}
-	for _, msg := range msgs {
-		cur := node
-		for _, b := range msg {
-			if cur.next[b] == nil {
-				cur.next[b] = &errorNode{}
-			}
-			cur = cur.next[b]
-		}
-		cur.match = true
-	}
-	return node
-}
-
-type errorNode struct {
-	next  [256]*errorNode
-	match bool
-}
-
-func (node *errorNode) Find(buf []byte) (found bool, n int) {
-	cur := node
-	for idx, b := range buf {
-		b = caseFold[b]
-		if cur.next[b] == nil {
-			break
-		}
-		cur = cur.next[b]
-		if cur.match {
-			found = true
-			n = idx
-		}
-	}
-
-	return found, n
-}
-
-var caseFold = [256]byte{}
-
-func init() {
-	for i := 0; i < 256; i++ {
-		b := byte(i)
-		if b >= 'A' && b <= 'Z' {
-			b += 'a' - 'A'
-		}
-		caseFold[i] = b
-	}
-}
-
-type nilReadCloser struct{}
-
-func (rc nilReadCloser) Read(b []byte) (n int, err error) {
-	return 0, io.EOF
-}
-
-func (rc nilReadCloser) Close() error {
-	return nil
 }

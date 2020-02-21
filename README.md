@@ -66,10 +66,12 @@ Gopher history:
 - https://ils.unc.edu/callee/gopherpaper.htm
 - https://arstechnica.com/tech-policy/2009/11/the-web-may-have-won-but-gopher-tunnels-on/
 - http://gopher.floodgap.com/overbite/relevance.html
+- http://muffinlabs.com/2013/06/12/goper2000---a-modern-gopher-server/
 
 Server software:
 
 - https://github.com/gophernicus/gophernicus
+- https://github.com/muffinista/gopher2000/
 
 Gopher protocol:
 
