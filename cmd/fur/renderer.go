@@ -127,14 +127,28 @@ func (d *dirRenderer) Render(out io.Writer, rs gopher.Response) error {
 				urlStr = dirent.URL.String()
 			}
 
+			lwspn := lwspCount(dirent.Display)
+			lwsp := dirent.Display[:lwspn]
+
 			fmt.Fprintf(out, "%s\n", dwrap)
-			fmt.Fprintf(out, "%s  \033[38;5;45m└─ %s\033[m\n", indent, urlStr)
+			fmt.Fprintf(out, "%s%s  \033[38;5;45m└─ %s\033[m\n", lwsp, indent, urlStr)
 		}
 
 		i++
 	}
 
 	return nil
+}
+
+func lwspCount(s string) int {
+	sl := len(s)
+	i := 0
+	for ; i < sl; i++ {
+		if s[i] != ' ' && s[i] != '\t' {
+			break
+		}
+	}
+	return i
 }
 
 var (
