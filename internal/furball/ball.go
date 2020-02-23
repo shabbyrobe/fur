@@ -15,6 +15,9 @@ type Ball struct {
 var _ gopher.Recorder = &Ball{}
 
 func (b *Ball) BeginRecording(u gopher.URL, at time.Time) gopher.Recording {
+	if b == nil {
+		return nil
+	}
 	return &EntryRecording{
 		ball: b,
 		entry: Entry{
