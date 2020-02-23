@@ -282,7 +282,7 @@ func (cmd *command) selectTextRenderer(rs gopher.Response) (rnd renderer, allowD
 
 	case *gopher.BinaryResponse:
 		switch rs.URL().ItemType {
-		case gopher.GIF:
+		case gopher.GIF, gopher.Image:
 			rnd = &imageRenderer{upscale: cmd.upscale}
 		case gopher.HTML:
 			rnd = &htmlRenderer{mode: cmd.htmlMode, w3m: cmd.w3m, cols: cols}
