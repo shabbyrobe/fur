@@ -137,10 +137,13 @@ func (cmd *command) URL() (gopher.URL, error) {
 }
 
 func (cmd *command) Client() *gopher.Client {
-	return &gopher.Client{
-		Recorder: cmd.ball,
-		Timeout:  cmd.timeout,
+	client := &gopher.Client{
+		Timeout: cmd.timeout,
 	}
+	if cmd.ball != nil {
+		client.Recorder = cmd.ball // 'nil interface' hazard
+	}
+	return client
 }
 
 func (cmd *command) outFileName(u gopher.URL) string {
