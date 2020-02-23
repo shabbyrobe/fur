@@ -79,8 +79,9 @@ func unmarshalDirent(txt string, line int, dir *Dirent) error {
 	}
 
 	fieldLimit := 4
-	if dir.ItemType == Info {
-		// XXX: Lots of servers don't fill out the extra fields for 'i' lines:
+	if dir.ItemType == Info || dir.ItemType == ItemError {
+		// XXX: Lots of servers don't fill out the extra fields for 'i' lines.
+		// Some don't fill it out for '3' lines, either.
 		fieldLimit = 1
 	}
 
