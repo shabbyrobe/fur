@@ -96,7 +96,7 @@ func (c *Client) send(ctx context.Context, conn conn, u URL, at time.Time, inter
 		}
 
 		scratch = scratch[:n]
-		rsErr := interceptError(scratch, func(status Status, msg string, confidence float64) *Error {
+		rsErr := DetectError(scratch, func(status Status, msg string, confidence float64) *Error {
 			if rec != nil {
 				rec.SetStatus(status, msg)
 			}

@@ -11,9 +11,9 @@ var (
 	nilReadCloserVal = nilReadCloser{}
 )
 
-type errFactoryFn func(status Status, msg string, confidence float64) *Error
+type ErrFactory func(status Status, msg string, confidence float64) *Error
 
-func interceptError(data []byte, errFactory errFactoryFn) *Error {
+func DetectError(data []byte, errFactory ErrFactory) *Error {
 	const firstLineMax = 200
 
 	dlen := len(data)
