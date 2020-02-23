@@ -110,7 +110,7 @@ func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.BoolVar(&cmd.upscale, "upscale", true, "Upscale images")
 	flags.BoolVar(&cmd.json, "j", false, "Render as JSON; will show base64 for binary, string for text and jsonl/ndjson for directories")
 	flags.BoolVar(&cmd.outAutoFile, "O", false, "Output to file, infer name from selector")
-	flags.DurationVar(&cmd.timeout, "t", 15*time.Second, "Timeout")
+	flags.DurationVar(&cmd.timeout, "t", 20*time.Second, "Timeout")
 	flags.StringVar(&cmd.outFile, "o", "", "Output file")
 	flags.StringVar(&cmd.search, "search", "", "Search (overrides URL)")
 	flags.StringVar(&cmd.w3m, "w3m", "", "Path to w3m for HTML rendering (detects)")
