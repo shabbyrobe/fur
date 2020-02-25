@@ -1,0 +1,34 @@
+- Should prescribe use of https://tools.ietf.org/html/rfc2606 '.invalid' TLDs
+  for dummy hostnames in 'error' or 'info' dirents for something to be valid
+  GopherII.
+
+- Connection re-use. If Content-Length is used or the dot is decoded, the
+  connection should be re-usable. Gopher over TLS in Australia is horrendous if
+  the handshake has to be re-negotiated every time because the protocol doesn't
+  provide for connection re-use by enforcing the dot.
+
+- CR/LF: this is overprescribed for textual content. It's an easy detail to
+  miss, and a lot of gopher scripts just hoof whatever file they find over the
+  wire without even bothering to dot-encode. CR/LF and LF should both be
+  allowed. If servers _should_ use CR/LF, but clients have no choice but to
+  adapt to whatever they get, why prescribe it in the first place?
+
+- Caps file should have entries indicating Gopher+, GopherII and GopherIIbis
+  support, this should be in the RFC.
+
+- GopherII selectors are not referenced in RFC4266 (gopher URLs), but Gopher+
+  gets liberal treatment. How does GopherII influence RFC4266?
+
+- How does a server know to stop reading when a client sends a body? client
+  should close the write side of the socket?
+
+- "It is also possible to retrieve only a *specific* record or range of
+  records.  For example, to retrieve only the views and the abstract, a
+  client may send:
+
+   <selector>^I!+INFO+ADMIN[CR][LF]"
+
+  What happens if +INFO is omitted? Does the server still send the INFO record
+  or not? Presume yes because it says it's mandatory earlier, but that makes
+  +INFO in the selector redundant
+

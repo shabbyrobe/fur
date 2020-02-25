@@ -19,8 +19,9 @@ I shoved some nice things in here because it was easy:
 The experiments I'm currently looking at:
 
 - CAPS file handling
+- Gopher Plus/II
 - TLS
-- Gopher Plus
+- Separate timeouts
 
 ## Expectation Management
 
@@ -60,6 +61,7 @@ Gopher sites:
 - [Large list of known gopher servers](gopher://gopher.floodgap.com/1/world)
 - [Search Gopher with Veronica-2](gopher://gopher.floodgap.com/7/v2/vs)
 - [Hacker News](gopher://hngopher.com/)
+- [Metafilter](gopher://gopher.metafilter.com)
 
 Gopher history/general:
 
@@ -79,6 +81,8 @@ Server software:
 - https://github.com/spc476/port70
 - https://github.com/jgoerzen/pygopherd
 - https://github.com/asterIRC/uGopherServer
+- https://github.com/michael-lazar/flask-gopher
+- http://gofish.sourceforge.net/
 
 Gopher protocol:
 
@@ -103,6 +107,12 @@ Crawlers:
 
 Clients:
 
+- https://github.com/jgoerzen/gopher
 - https://thelambdalab.xyz/elpher/
 - https://rawtext.club/~sloum/bombadillo.html (https://tildegit.org/sloum/bombadillo)
+- https://github.com/jankammerath/gophie
+
+Gemini:
+
+- gopher://zaibatsu.circumlunar.space/1/~solderpunk/gemini
 

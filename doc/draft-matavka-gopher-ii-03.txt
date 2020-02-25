@@ -5,23 +5,24 @@
 Network Working Group                                         T. Matavka
 Internet-Draft
 Updates: 1436, 4266 (if approved)                               W. Faust
-Intended status: Standards Track                            June 8, 2015
-Expires: December 10, 2015
+Intended status: Informational                            August 6, 2015
+Expires: February 7, 2016
 
 
                Gopher-II: The Next Generation Gopher WWIS
-                       draft-matavka-gopher-ii-02
+                       draft-matavka-gopher-ii-03
 
 Abstract
 
    The Gopher protocol is over twenty years old.  Changing practices and
    unofficial extensions have caused Gopher as currently used to differ,
-   but remain largely compatible with, the standard established in its
-   official governing document, *The Internet Gopher Protocol (a
-   distributed document search and retrieval protocol)*, known as *RFC
-   1436*.  Therefore, this document attempts to establish a contemporary
-   specification of the Gopher communications protocol, departing as
-   little as possible from current practice.
+   but remain largely compatible with, the technical specifications
+   first established in its first informational document, *The Internet
+   Gopher Protocol (a distributed document search and retrieval
+   protocol)*, known as *RFC 1436*.  Therefore, this document attempts
+   to establish a contemporary specification of the Gopher
+   communications protocol, departing as little as possible from current
+   practice.
 
 Status of This Memo
 
@@ -38,7 +39,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 10, 2015.
+   This Internet-Draft will expire on February 7, 2016.
 
 Copyright Notice
 
@@ -49,15 +50,15 @@ Copyright Notice
    Provisions Relating to IETF Documents
    (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
-   carefully, as they describe your rights and restrictions with respect
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 1]
+Matavka & Faust         Expires February 7, 2016                [Page 1]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
+   carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
    include Simplified BSD License text as described in Section 4.e of
    the Trust Legal Provisions and are provided without warranty as
@@ -103,17 +104,17 @@ Table of Contents
    18. References  . . . . . . . . . . . . . . . . . . . . . . . . .  30
      18.1.  Normative References . . . . . . . . . . . . . . . . . .  30
      18.2.  Informative References . . . . . . . . . . . . . . . . .  31
-   Appendix A.  Summary of Changes from RFC 1436 . . . . . . . . . .  31
+   Appendix A.  Summary of Changes from RFC 1436 . . . . . . . . . .  32
    Appendix B.  Change Log . . . . . . . . . . . . . . . . . . . . .  32
-     B.1.  Changes from -00 to -01 of this specification . . . . . .  32
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 2]
+Matavka & Faust         Expires February 7, 2016                [Page 2]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
+     B.1.  Changes from -00 to -01 of this specification . . . . . .  32
      B.2.  Changes from -01 to -02 of this specification . . . . . .  32
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  32
 
@@ -158,23 +159,22 @@ Internet-Draft                  Gopher II                      June 2015
    difference in strict-compatibility terms arises in the new selector
    types (including, but not limited to, one distinguishing "plain text"
    from "ASCII markup document").  That said, although these new
-   selectors are not officially standardised in RFC 1436, most existing
-   Gopher clients will ask for user input when attempting to process an
-   unfamiliar selector, and these selectors have been in de facto use
+   selectors are not described in RFC 1436, most existing Gopher clients
+   will ask for user input when attempting to process an unfamiliar
+   selector, and these selectors have been in de facto use for some
 
 
 
-
-Matavka & Faust         Expires December 10, 2015               [Page 3]
+Matavka & Faust         Expires February 7, 2016                [Page 3]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
-   for some time, such that current Gopher clients will be compatible
-   with them already.
+   time, such that current Gopher clients will be compatible with them
+   already.
 
-   GopherII modifies the original standard in eight ways.  Aside from
-   the aforementioned new selector types, GopherII introduces the
+   GopherII modifies the original specification in eight ways.  Aside
+   from the aforementioned new selector types, GopherII introduces the
    concept of the so-called policy file.  Policy files are configuration
    files sent from the server to the client in ASCII form with a defined
    syntax.  Three policy files are defined in this document: the
@@ -189,7 +189,7 @@ Internet-Draft                  Gopher II                      June 2015
    Policy files account for three of the substantive changes from
    original Gopher.  GopherII also adds HTTP-style error codes, a
    mechanism for titling the Gopher client window or tab, and
-   standardises a backward-compatible method for linking to HTTP
+   establishes a backward-compatible method for linking to HTTP
    addresses.  The final change is that GopherII adds support for the
    metadata system known as Gopher+ (GopherIIbis in this document),
    although this part of the GopherII specification is entirely
@@ -221,9 +221,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 4]
+Matavka & Faust         Expires February 7, 2016                [Page 4]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    o  Server : [Close Connexion]
@@ -277,9 +277,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 5]
+Matavka & Faust         Expires February 7, 2016                [Page 5]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    say nothing, waiting for a CR/LF-terminated selector string from the
@@ -333,9 +333,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 6]
+Matavka & Faust         Expires February 7, 2016                [Page 6]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
 4.  Selector Formats
@@ -389,9 +389,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 7]
+Matavka & Faust         Expires February 7, 2016                [Page 7]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
        Type    Treat As    Meaning
@@ -445,9 +445,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 8]
+Matavka & Faust         Expires February 7, 2016                [Page 8]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    GopherIIbis is an OPTIONAL, but recommended, addition to the basic
@@ -501,9 +501,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015               [Page 9]
+Matavka & Faust         Expires February 7, 2016                [Page 9]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    selector value; host and port SHOULD again be set to aforementioned
@@ -534,7 +534,7 @@ Internet-Draft                  Gopher II                      June 2015
 
 6.  Requesting Data
 
-   A standard GopherII client requests data from the server by
+   A conformant GopherII client requests data from the server by
    transmitting the selector string, a carriage return, and a line feed.
    For instance, to retrieve the file `services.txt`, the client sends
 
@@ -557,9 +557,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 10]
+Matavka & Faust         Expires February 7, 2016               [Page 10]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
       selector^Imime/type la_CO^I1[CR][LF]datadatadatadata
@@ -613,9 +613,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 11]
+Matavka & Faust         Expires February 7, 2016               [Page 11]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
 8.  Requesting and Receiving Metadata
@@ -669,9 +669,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 12]
+Matavka & Faust         Expires February 7, 2016               [Page 12]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    selector should now be abundantly clear: the `INFO` record serves to
@@ -725,9 +725,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 13]
+Matavka & Faust         Expires February 7, 2016               [Page 13]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    The first number in the `Score-Range` field is the *lower bound*, and
@@ -781,9 +781,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 14]
+Matavka & Faust         Expires February 7, 2016               [Page 14]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    text/rtf pt_BR: <66K>
@@ -817,8 +817,8 @@ Internet-Draft                  Gopher II                      June 2015
 9.  Errors
 
    Although undesirable in communication, errors do occur in Gopher, and
-   their handling is crucial for a user-friendly, and standards-
-   compliant, Gopher experience.
+   their handling is crucial for a user-friendly Gopher experience, and
+   one which conforms to this document.
 
    When an error is encountered, the server MUST return a menu whose
    first item bears itemtype `3`.  All other ways of signalling an
@@ -837,9 +837,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 15]
+Matavka & Faust         Expires February 7, 2016               [Page 15]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    the server sends two minus signs, followed by an error code, a
@@ -893,9 +893,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 16]
+Matavka & Faust         Expires February 7, 2016               [Page 16]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    503 Service Unavailable  The server is currently unable to handle the
@@ -907,8 +907,8 @@ Internet-Draft                  Gopher II                      June 2015
    signifies an unavailable server (similar to the 500-series errors),
    and error code `3` signifies an item that has moved.  Provision was
    made to create new error codes.  This is now DEPRECATED; the *ad hoc*
-   creation of new errors does not accord with the ethos of a
-   standardised Internet protocol.
+   creation of new errors does not accord with the ethos of a formalised
+   Internet protocol.
 
 10.  Titles in Gopher
 
@@ -921,7 +921,7 @@ Internet-Draft                  Gopher II                      June 2015
 
    i<titletext>^ITITLE^Iexample.com^I0
 
-   It is identical to a standard informational resource (itemtype `i`);
+   It is identical to a normal informational resource (itemtype `i`);
    the selector string, however, is set to the specific value, `TITLE`.
 
    The composition of the above format is as follows:
@@ -949,9 +949,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 17]
+Matavka & Faust         Expires February 7, 2016               [Page 17]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    SHALL be considered a subordinate `TITLE` and SHOULD be rendered in a
@@ -965,7 +965,7 @@ Internet-Draft                  Gopher II                      June 2015
 
 11.  Linking to Web Addresses
 
-   It is now possible, and standard, to link to documents, preferably in
+   It is now possible, and common, to link to documents, preferably in
    HTML, on the World Wide Web, Gopher's younger, more widespread
    cousin, from Gopher itself, using a two-part system: a `URL:`
    selector on the Gopher (local) end, and a *redirect page* (following
@@ -1005,9 +1005,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 18]
+Matavka & Faust         Expires February 7, 2016               [Page 18]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    o  The item type corresponds to the type of document on the remote
@@ -1061,9 +1061,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 19]
+Matavka & Faust         Expires February 7, 2016               [Page 19]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    This document may be any desired by the server authors, but MUST
@@ -1117,9 +1117,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 20]
+Matavka & Faust         Expires February 7, 2016               [Page 20]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
       PROTOCOL
@@ -1173,9 +1173,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 21]
+Matavka & Faust         Expires February 7, 2016               [Page 21]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    If :<port> is omitted, the port defaults to 70. <gophertype> is a
@@ -1229,9 +1229,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 22]
+Matavka & Faust         Expires February 7, 2016               [Page 22]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    handle POSIX (UNIX and related operating systems), FAT/NTFS (used by
@@ -1285,9 +1285,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 23]
+Matavka & Faust         Expires February 7, 2016               [Page 23]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
     CAPS
@@ -1341,9 +1341,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 24]
+Matavka & Faust         Expires February 7, 2016               [Page 24]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    tells the client not to cut everything up to the first path
@@ -1397,9 +1397,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 25]
+Matavka & Faust         Expires February 7, 2016               [Page 25]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    method used on sites using the Hypertext Transfer and File Transfer
@@ -1425,8 +1425,8 @@ Internet-Draft                  Gopher II                      June 2015
    this capability into a new crawler.
 
    The policy file consists of one or more records, separated by one or
-   more blank lines, terminated by the Gopher-standard CR/LF.  Each
-   record contains two or more lines of the form
+   more blank lines, terminated by the CR/LF string as usual in Gopher.
+   Each record contains two or more lines of the form
 
    <field>:<value>
 
@@ -1453,9 +1453,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 26]
+Matavka & Faust         Expires February 7, 2016               [Page 26]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    The value of the `Disallow` field specifies a partial URL that is not
@@ -1509,9 +1509,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 27]
+Matavka & Faust         Expires February 7, 2016               [Page 27]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
    # Piss off!
@@ -1565,9 +1565,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 28]
+Matavka & Faust         Expires February 7, 2016               [Page 28]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
       Sterling|Cooper|Draper|Pryce
@@ -1610,7 +1610,7 @@ Internet-Draft                  Gopher II                      June 2015
 16.  Security Considerations
 
    Security in GopherII is dependent on the connexion on which it runs.
-   Standard GopherII (that is, running on "straight" TCP) is insecure
+   Normal GopherII (that is, running on "straight" TCP) is insecure
    simply by virtue of the protocol.  Sensitive information, such as
    credit card numbers, must not be sent over a standard Gopher link.
    It is permissible to run GopherII over SSL, in which case all
@@ -1621,9 +1621,9 @@ Internet-Draft                  Gopher II                      June 2015
 
 
 
-Matavka & Faust         Expires December 10, 2015              [Page 29]
+Matavka & Faust         Expires February 7, 2016               [Page 29]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
 17.  Acknowledgements
@@ -1664,22 +1664,22 @@ Internet-Draft                  Gopher II                      June 2015
               <gopher://gophernicus.org/0/doc/gopher/gopher+.txt>
 
    [RFC1436]  Anklesaria, F., McCahill, M., Lindner, P., Johnson, D.,
-              Torrey, D., and B. Alberti, "The Internet Gopher Protocol
+              Torrey, D., and B. Albert, "The Internet Gopher Protocol
               (a distributed document search and retrieval protocol)",
-              RFC 1436, March 1993.
+              RFC 1436, DOI 10.17487/RFC1436, March 1993,
+              <http://www.rfc-editor.org/info/rfc1436>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119, March 1997.
+              Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
+              RFC2119, March 1997,
+              <http://www.rfc-editor.org/info/rfc2119>.
 
 
 
 
-
-
-
-Matavka & Faust         Expires December 10, 2015              [Page 30]
+Matavka & Faust         Expires February 7, 2016               [Page 30]
 
-Internet-Draft                  Gopher II                      June 2015
+Internet-Draft                  Gopher II                    August 2015
 
 
 18.2.  Informative References
@@ -1716,8 +1716,9 @@ Internet-Draft                  Gopher II                      June 2015
               <gopher://gophernicus.org/1/doc/gopher/> - A number of
               documents relating to gopher, including the RFCs
 
-   [RFC4266]  Hoffman, P., "The gopher URI Scheme", RFC 4266, November
-              2005.
+   [RFC4266]  Hoffman, P., "The gopher URI Scheme", RFC 4266, DOI
+              10.17487/RFC4266, November 2005,
+              <http://www.rfc-editor.org/info/rfc4266>.
 
    [UpdatedGopher]
               ??, ?., "The "Updated Gopher RFC" thread", 2012.
@@ -1725,19 +1726,23 @@ Internet-Draft                  Gopher II                      June 2015
               The "Updated Gopher RFC" thread (started May 8 2012) on
               the gopher-project mailing list
 
+
+
+
+
+
+
+
+Matavka & Faust         Expires February 7, 2016               [Page 31]
+
+Internet-Draft                  Gopher II                    August 2015
+
+
 Appendix A.  Summary of Changes from RFC 1436
 
    In broad strokes, RFC 1436 is compatible with this document; an "old"
    Gopher client should be fully capable of browsing a GopherII server.
    GopherII can be considered simply a refinement of the RFC 1436
-
-
-
-Matavka & Faust         Expires December 10, 2015              [Page 31]
-
-Internet-Draft                  Gopher II                      June 2015
-
-
    concept; while RFC 1436 lays out a viable protocol, it leaves a lot
    of small-scale implementation detail up to the makers of client
    software.  While a sort of gentleman's agreement did manifest itself,
@@ -1784,9 +1789,5 @@ Authors' Addresses
 
 
 
+Matavka & Faust         Expires February 7, 2016               [Page 32]
 
-
-
-
-
-Matavka & Faust         Expires December 10, 2015              [Page 32]
