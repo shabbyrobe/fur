@@ -4,8 +4,9 @@ import "time"
 
 type Caps interface {
 	Version() int
-	ExpiresAfter() time.Duration
+	ExpiresAfter() time.Duration // Return -1 if the Caps don't expire
 
+	Supports(feature Feature) bool
 	PathConfig() (*PathConfig, error)
 	ServerInfo() (*ServerInfo, error)
 	Software() (name, version string)
@@ -15,40 +16,26 @@ type Caps interface {
 	DefaultEncoding() string
 }
 
-var UnixPathConfig = PathConfig{
-	Delimiter:        "/",
-	Identity:         ".",
-	Parent:           "..",
-	ParentDouble:     false,
-	EscapeCharacter:  '\\',
-	KeepPreDelimiter: false,
+type CapsSource interface {
+	LoadCaps(host string, port int) (Caps, error)
 }
 
-type PathConfig struct {
-	// Refers to how the server separates folders from each other; Unix machines use `/`,
-	// Microsoft machines use `\`, and obsolete Macs use `:`
-	Delimiter string
+var DefaultCaps Caps = defaultCaps{}
 
-	// Refers to the shorthand used by an operating system to mean "this directory"; UNIX
-	// machines use `.`.
-	Identity string
+type defaultCaps struct{}
 
-	// Refers to the shorthand for "the directory immediately above", and is `..` on UNIX
-	// and Microsoft systems.
-	Parent string
+var _ Caps = defaultCaps{}
 
-	// Refers to an oddball feature of obsolete Macs: two consecutive path delimiters are
-	// used to refer to the parent directory. For all systems other than pre-OS X
-	// Macintoshes, this should be false.
-	ParentDouble bool
+func (defaultCaps) Version() int                     { return 1 }
+func (defaultCaps) ExpiresAfter() time.Duration      { return -1 }
+func (defaultCaps) Supports(feature Feature) bool    { return false }
+func (defaultCaps) ServerInfo() (*ServerInfo, error) { return nil, nil }
+func (defaultCaps) Software() (name, version string) { return "", "" }
+func (defaultCaps) DefaultEncoding() string          { return "UTF-8" }
 
-	// Tells the client the escape character for quoting delimiters when they appear in
-	// selectors; most of the time, this is `\\`.
-	EscapeCharacter byte
-
-	// Tells the client not to cut everything up to the first path delimiter; most of the
-	// time, this should be `FALSE`.
-	KeepPreDelimiter bool
+func (defaultCaps) PathConfig() (*PathConfig, error) {
+	up := UnixPathConfig
+	return &up, nil
 }
 
 type ServerInfo struct {

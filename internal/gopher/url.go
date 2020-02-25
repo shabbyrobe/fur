@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+// URL implements most of the Gopher URL scheme (excluding the crazy
+// Gopher+ stuff).
+//
+// http://tools.ietf.org/html/rfc4266
+// https://www.w3.org/Addressing/URL/4_1_Gopher+.html
 type URL struct {
 	Hostname string
 	Port     int
@@ -16,7 +21,24 @@ type URL struct {
 	ItemType ItemType
 	Selector string
 	Search   string
-	Plus     string
+}
+
+func (u URL) AsMetaItem(records ...string) URL {
+	if len(records) == 0 {
+		u.Search = string(MetaItem)
+	} else {
+		u.Search = recordSearch(MetaItem, records...)
+	}
+	return u
+}
+
+func (u URL) AsMetaDir(records ...string) URL {
+	if len(records) == 0 {
+		u.Search = string(MetaDir)
+	} else {
+		u.Search = recordSearch(MetaDir, records...)
+	}
+	return u
 }
 
 // https://en.wikipedia.org/wiki/Gopher_(protocol)#URL_links
@@ -37,30 +59,54 @@ func (u URL) WWW() (url string, ok bool) {
 	return "", false
 }
 
+func (u URL) IsMeta() bool {
+	// A GopherIIbis client may request the metadata for a specific selector
+	// by sending a string in the following form:
+	//	<selector>^I![CR][LF]
+	//
+	// It is possible to retrieve metadata for an *entire directory*. The `INFO` record
+	// serves to separate metadata for one file from metadata for another. For example:
+	//	<selector>^I&[CR][LF]
+	//
+	return len(u.Search) > 0 && (u.Search[0] == '!' || u.Search[0] == '&')
+}
+
+func (u URL) MetaType() MetaType {
+	if len(u.Search) > 0 {
+		c := u.Search[0]
+		switch c {
+		case '!', '&':
+			return MetaType(c)
+		}
+	}
+	return MetaNone
+}
+
 func (u URL) CanFetch() bool {
 	return u.ItemType.CanFetch() && !IsWellKnownDummyHostname(u.Hostname)
 }
 
 func (u URL) Host() string {
-	p := u.Port
+	p := int64(u.Port)
 	if p == 0 {
 		p = 70
 	}
-	return fmt.Sprintf("%s:%d", u.Hostname, p)
+	return net.JoinHostPort(u.Hostname, strconv.FormatInt(p, 10))
 }
 
-func (u URL) Query() string {
-	if u.Search == "" {
-		return u.Selector + "\r\n"
-	} else {
-		return u.Selector + "\t" + u.Search + "\r\n"
-	}
-}
+func (u URL) URL() URL { return u }
 
 func (u URL) String() string {
 	var out strings.Builder
 	out.WriteString("gopher://")
-	out.WriteString(u.Hostname)
+
+	if strings.IndexByte(u.Hostname, ':') >= 0 {
+		out.WriteByte('[')
+		out.WriteString(u.Hostname)
+		out.WriteByte(']')
+	} else {
+		out.WriteString(u.Hostname)
+	}
 
 	if u.Port != 70 {
 		out.WriteByte(':')
@@ -72,21 +118,8 @@ func (u URL) String() string {
 		out.WriteString(string(rune(u.ItemType)))
 		out.WriteString(escape(u.Selector))
 
-		n := 0
-		if u.Plus != "" {
-			n = 2
-		} else if u.Search != "" {
-			n = 1
-		}
-
-		switch n {
-		case 2:
-			out.WriteByte('\t')
-			out.WriteString(escape(u.Search))
-			out.WriteByte('\t')
-			out.WriteString(escape(u.Plus))
-		case 1:
-			out.WriteByte('\t')
+		if u.Search != "" {
+			out.WriteString("%09")
 			out.WriteString(escape(u.Search))
 		}
 	}
@@ -115,7 +148,6 @@ func (u URL) Parts() map[string]interface{} {
 	m["ItemType"] = u.ItemType
 	m["Selector"] = u.Selector
 	m["Search"] = u.Search
-	m["Plus"] = u.Plus
 	return m
 }
 
@@ -125,15 +157,15 @@ func IsWellKnownDummyHostname(s string) bool {
 	// This is a collection of strings seen in real-world gopher servers
 	// that indicate the hostname is a dummy:
 	return s == "error.host" ||
-		s == "fakeserver" ||
-		s == "Error" ||
-		s == "none" ||
+		s == "error" ||
 		s == "fake" ||
-		s == "(NULL)" ||
-		s == "(FALSE)" ||
+		s == "fakeserver" ||
+		s == "none" ||
 		s == "invalid" || // RFC2606 hostnames: https://tools.ietf.org/html/rfc2606
 		s == "example" ||
 		s == "." ||
+		s == "(null)" ||
+		s == "(false)" ||
 		strings.HasSuffix(s, ".invalid") ||
 		strings.HasSuffix(s, ".example")
 }
@@ -222,9 +254,6 @@ func ParseURL(s string) (gu URL, err error) {
 					field, s = field+1, i+1
 				case 1:
 					gu.Search = p[s:i]
-					field, s = field+1, i+1
-				case 2:
-					gu.Plus = p[s:]
 					goto pathDone
 				}
 			}
@@ -237,4 +266,19 @@ func ParseURL(s string) (gu URL, err error) {
 	}
 
 	return gu, nil
+}
+
+func recordSearch(meta MetaType, records ...string) string {
+	var sb strings.Builder
+	sb.WriteByte(byte(meta))
+	for _, rec := range records {
+		if len(rec) == 0 {
+			continue
+		}
+		if rec[0] != '+' {
+			sb.WriteByte('+')
+		}
+		sb.WriteString(rec)
+	}
+	return sb.String()
 }

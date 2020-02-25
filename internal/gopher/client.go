@@ -33,13 +33,13 @@ func (c *Client) timeoutDial() time.Duration {
 func (c *Client) timeoutRead() time.Duration  { return c.timeoutDial() }
 func (c *Client) timeoutWrite() time.Duration { return c.timeoutDial() }
 
-func (c *Client) dial(ctx context.Context, u URL) (*net.TCPConn, error) {
-	if !u.CanFetch() {
-		return nil, fmt.Errorf("gopher: cannot fetch URL %q", u)
+func (c *Client) dial(ctx context.Context, rq *Request) (*net.TCPConn, error) {
+	if !rq.url.CanFetch() {
+		return nil, fmt.Errorf("gopher: cannot fetch URL %q", rq.url)
 	}
 
 	dialer := net.Dialer{Timeout: c.timeoutDial()}
-	conn, err := dialer.DialContext(ctx, "tcp", u.Host())
+	conn, err := dialer.DialContext(ctx, "tcp", rq.url.Host())
 	if err != nil {
 		return nil, err
 	}
@@ -52,20 +52,32 @@ func (c *Client) dial(ctx context.Context, u URL) (*net.TCPConn, error) {
 //
 // Callers must use the reader returned by this function rather than the conn to read
 // the response.
-func (c *Client) send(ctx context.Context, conn conn, u URL, at time.Time, interceptErrors bool) (conn, error) {
+func (c *Client) send(ctx context.Context, conn conn, rq *Request, at time.Time, interceptErrors bool) (conn, error) {
 	var rec Recording
 
 	if c.Recorder != nil {
-		rec = c.Recorder.BeginRecording(u, at)
+		rec = c.Recorder.BeginRecording(rq, at)
 		conn = recordConn(rec, conn)
 	}
 
 	if err := conn.SetWriteDeadline(at.Add(c.timeoutWrite())); err != nil {
 		return conn, err
 	}
-	if _, err := conn.Write([]byte(u.Query())); err != nil {
+
+	var buf bytes.Buffer
+	if err := rq.buildSelector(&buf); err != nil {
 		return conn, err
 	}
+
+	if _, err := conn.Write(buf.Bytes()); err != nil {
+		return conn, err
+	}
+	if body := rq.Body(); body != nil {
+		if _, err := io.Copy(conn, body); err != nil {
+			return conn, err
+		}
+	}
+
 	if err := conn.SetReadDeadline(at.Add(c.timeoutRead())); err != nil {
 		return conn, err
 	}
@@ -100,7 +112,7 @@ func (c *Client) send(ctx context.Context, conn conn, u URL, at time.Time, inter
 			if rec != nil {
 				rec.SetStatus(status, msg)
 			}
-			return NewError(u, status, msg, confidence)
+			return NewError(rq.URL(), status, msg, confidence)
 		})
 		if rsErr != nil {
 			rsErr.Raw = scratch
@@ -112,13 +124,13 @@ func (c *Client) send(ctx context.Context, conn conn, u URL, at time.Time, inter
 	return conn, nil
 }
 
-func (c *Client) dialAndSend(ctx context.Context, u URL, at time.Time, interceptErrors bool) (conn, error) {
-	conn, err := c.dial(ctx, u)
+func (c *Client) dialAndSend(ctx context.Context, rq *Request, at time.Time, interceptErrors bool) (conn, error) {
+	conn, err := c.dial(ctx, rq)
 	if err != nil {
 		return nil, err
 	}
 
-	rdr, err := c.send(ctx, conn, u, at, interceptErrors)
+	rdr, err := c.send(ctx, conn, rq, at, interceptErrors)
 	if err != nil {
 		conn.Close()
 		return nil, err
@@ -127,75 +139,75 @@ func (c *Client) dialAndSend(ctx context.Context, u URL, at time.Time, intercept
 	return rdr, nil
 }
 
-func (c *Client) Fetch(ctx context.Context, u URL) (Response, error) {
-	it := u.ItemType
-	if u.Root {
+func (c *Client) Fetch(ctx context.Context, rq *Request) (Response, error) {
+	it := rq.url.ItemType
+	if rq.url.Root {
 		it = Dir
 	}
 	if it.IsBinary() || c.ExtraBinaryTypes[it] {
-		return c.Binary(ctx, u)
+		return c.Binary(ctx, rq)
 	}
 	switch it {
 	case UUEncoded:
-		return c.UUEncoded(ctx, u)
+		return c.UUEncoded(ctx, rq)
 	case Dir, Search:
-		return c.Dir(ctx, u)
+		return c.Dir(ctx, rq)
 	}
-	return c.Text(ctx, u)
+	return c.Text(ctx, rq)
 }
 
-func (c *Client) Search(ctx context.Context, u URL) (*DirResponse, error) {
+func (c *Client) Search(ctx context.Context, rq *Request) (*DirResponse, error) {
 	start := time.Now()
-	conn, err := c.dialAndSend(ctx, u, start, !c.DisableErrorIntercept)
+	conn, err := c.dialAndSend(ctx, rq, start, !c.DisableErrorIntercept)
 	if err != nil {
 		return nil, err
 	}
-	return NewDirResponse(u, conn), nil
+	return NewDirResponse(rq, conn), nil
 }
 
-func (c *Client) Dir(ctx context.Context, u URL) (*DirResponse, error) {
+func (c *Client) Dir(ctx context.Context, rq *Request) (*DirResponse, error) {
 	start := time.Now()
-	conn, err := c.dialAndSend(ctx, u, start, !c.DisableErrorIntercept)
+	conn, err := c.dialAndSend(ctx, rq, start, !c.DisableErrorIntercept)
 	if err != nil {
 		return nil, err
 	}
-	return NewDirResponse(u, conn), nil
+	return NewDirResponse(rq, conn), nil
 }
 
-func (c *Client) Text(ctx context.Context, u URL) (*TextResponse, error) {
+func (c *Client) Text(ctx context.Context, rq *Request) (*TextResponse, error) {
 	start := time.Now()
-	conn, err := c.dialAndSend(ctx, u, start, !c.DisableErrorIntercept)
+	conn, err := c.dialAndSend(ctx, rq, start, !c.DisableErrorIntercept)
 	if err != nil {
 		return nil, err
 	}
-	return NewTextResponse(u, conn), nil
+	return NewTextResponse(rq, conn), nil
 }
 
-func (c *Client) Binary(ctx context.Context, u URL) (*BinaryResponse, error) {
+func (c *Client) Binary(ctx context.Context, rq *Request) (*BinaryResponse, error) {
 	start := time.Now()
-	conn, err := c.dialAndSend(ctx, u, start, !c.DisableErrorIntercept)
+	conn, err := c.dialAndSend(ctx, rq, start, !c.DisableErrorIntercept)
 	if err != nil {
 		return nil, err
 	}
-	return NewBinaryResponse(u, conn), nil
+	return NewBinaryResponse(rq, conn), nil
 }
 
-func (c *Client) UUEncoded(ctx context.Context, u URL) (*UUEncodedResponse, error) {
+func (c *Client) UUEncoded(ctx context.Context, rq *Request) (*UUEncodedResponse, error) {
 	start := time.Now()
-	conn, err := c.dialAndSend(ctx, u, start, !c.DisableErrorIntercept)
+	conn, err := c.dialAndSend(ctx, rq, start, !c.DisableErrorIntercept)
 	if err != nil {
 		return nil, err
 	}
-	return NewUUEncodedResponse(u, conn), nil
+	return NewUUEncodedResponse(rq, conn), nil
 }
 
-func (c *Client) Raw(ctx context.Context, u URL) (Response, error) {
+func (c *Client) Raw(ctx context.Context, rq *Request) (Response, error) {
 	start := time.Now()
-	conn, err := c.dialAndSend(ctx, u, start, false)
+	conn, err := c.dialAndSend(ctx, rq, start, false)
 	if err != nil {
 		return nil, err
 	}
-	return NewBinaryResponse(u, conn), nil
+	return NewBinaryResponse(rq, conn), nil
 }
 
 type conn interface {

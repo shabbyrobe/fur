@@ -6,7 +6,7 @@ import (
 )
 
 type Recorder interface {
-	BeginRecording(u URL, at time.Time) Recording
+	BeginRecording(rq *Request, at time.Time) Recording
 }
 
 type Recording interface {

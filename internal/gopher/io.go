@@ -7,10 +7,16 @@ import (
 	"net/textproto"
 )
 
-func DotReader(rdr io.Reader) io.Reader {
+func NewTextReader(rdr io.Reader) io.Reader {
 	dot := textproto.NewReader(bufio.NewReader(rdr)).DotReader()
 	wrp := &expectedUnexpectedEOFReader{rdr: dot}
 	return wrp
+}
+
+func MustFlush(f interface{ Flush() error }) {
+	if err := f.Flush(); err != nil {
+		panic(err)
+	}
 }
 
 type readCloser struct {
@@ -18,11 +24,17 @@ type readCloser struct {
 	closeFn func() error
 }
 
-func (rc *readCloser) Read(b []byte) (int, error) { return rc.readFn(b) }
-func (rc *readCloser) Close() error               { return rc.closeFn() }
+func (rc *readCloser) Read(b []byte) (int, error) {
+	return rc.readFn(b)
+}
+
+func (rc *readCloser) Close() error {
+	return rc.closeFn()
+}
 
 type expectedUnexpectedEOFReader struct {
-	rdr io.Reader
+	rdr     io.Reader
+	replace error
 }
 
 func (r *expectedUnexpectedEOFReader) Read(b []byte) (n int, err error) {
@@ -33,12 +45,15 @@ func (r *expectedUnexpectedEOFReader) Read(b []byte) (n int, err error) {
 		// the Gopher+ content length and the terminator line, we have no reliable way of
 		// knowing that the response is truncated.
 		//
-		// There's also no consistency to it: Veronica2 sends it for search results, which
-		// are a directory listing, so it really is expected (and a good idea) to send
-		// the terminator line.
+		// There's no other way to detect a truncated response as we don't get sent the
+		// content length, so it's a lot better for clients if the server does send this.
 		//
 		// Gopher servers: please send '.\r\n'.
-		err = io.EOF
+		if r.replace == nil {
+			err = io.EOF
+		} else {
+			err = r.replace
+		}
 	}
 	return n, err
 }

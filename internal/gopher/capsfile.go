@@ -38,6 +38,21 @@ func (cf *CapsFile) Version() int { return cf.version }
 
 func (cf *CapsFile) ExpiresAfter() time.Duration { return cf.expiresAfter }
 
+func (cf *CapsFile) Supports(feature Feature) bool {
+	switch feature {
+	case FeatureIIbis:
+		v, _, _ := cf.Bool("SupportsGopherIIbis")
+		return v
+	case FeatureII:
+		v, _, _ := cf.Bool("SupportsGopherII")
+		return v
+	case FeaturePlus:
+		v, _, _ := cf.Bool("SupportsGopherPlus")
+		return v
+	}
+	return false
+}
+
 func (cf *CapsFile) String(key string) (s string, ok bool) {
 	kv := cf.keyIndex[strings.ToLower(key)]
 	if kv == nil {
@@ -205,11 +220,11 @@ func ParseCapsBytes(name string, data []byte, flag ParseCapsFlag) (*CapsFile, er
 		if pos < sz {
 			nl := bytes.IndexByte(data[pos:], '\n')
 			if nl >= 0 {
+				line = dropCR(data[pos : pos+nl])
 				end = nl + 1
-				line = dropCR(data[pos:pos+nl], nl)
 			} else {
-				end = 0
-				line = data[pos:]
+				line = dropCR(data[pos:])
+				end = sz - pos
 			}
 
 			if len(line) == 0 || line[0] == ' ' || line[0] == '\t' {
@@ -316,7 +331,8 @@ func capsParseKV(line []byte) (k, v string, err error) {
 	return k, v, nil
 }
 
-func dropCR(data []byte, sz int) []byte {
+func dropCR(data []byte) []byte {
+	sz := len(data)
 	if len(data) > 0 && data[sz-1] == '\r' {
 		return data[0 : sz-1]
 	}

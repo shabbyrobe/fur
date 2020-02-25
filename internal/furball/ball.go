@@ -14,14 +14,14 @@ type Ball struct {
 
 var _ gopher.Recorder = &Ball{}
 
-func (b *Ball) BeginRecording(u gopher.URL, at time.Time) gopher.Recording {
-	if b == nil {
+func (b *Ball) BeginRecording(rq *gopher.Request, at time.Time) gopher.Recording {
+	if b == nil || rq == nil {
 		return nil
 	}
 	return &EntryRecording{
 		ball: b,
 		entry: Entry{
-			URL: u,
+			URL: rq.URL(),
 			At:  at,
 		},
 	}

@@ -39,18 +39,20 @@ const (
 	Sound    = 's'
 	XML      = 'x'
 	Video    = ';'
+
+	MetaError = '-'
 )
 
 type Class int
 
 const (
-	UnknownClass  Class = 0
-	BinaryClass   Class = 1
-	ExternalClass Class = 2
-	DirClass      Class = 3
-	TextClass     Class = 4
-	ErrorClass    Class = 5
-	InfoClass     Class = 6
+	UnknownClass Class = iota
+	BinaryClass
+	ExternalClass
+	DirClass
+	TextClass
+	ErrorClass
+	InfoClass
 )
 
 var itemTypeStrings [256]string

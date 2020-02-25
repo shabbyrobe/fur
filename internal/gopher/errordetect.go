@@ -152,7 +152,7 @@ func extractDirentError(data []byte) (status Status, msg string, found bool) {
 			}
 
 			line = errorTrimRightCRLF(line, len(line))
-			if err := unmarshalDirent(string(line), lnum, &dirent); err != nil {
+			if err := parseDirent(string(line), lnum, &dirent); err != nil {
 				// XXX: if this is the last line in 'data', we may be trying to
 				// read a truncated dirent, so if we have already found a valid
 				// dirent, let's not overwrite it

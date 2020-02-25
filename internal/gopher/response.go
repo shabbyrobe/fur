@@ -13,23 +13,23 @@ var lineEnding = []byte{'\r', '\n'}
 type Response interface {
 	Reader() io.ReadCloser
 	Status() Status
-	URL() URL
+	Request() *Request
 	Class() Class
 	Close() error
 }
 
 type BinaryResponse struct {
-	url   URL
+	rq    *Request
 	inner io.ReadCloser
 }
 
 var _ Response = &BinaryResponse{}
 
-func NewBinaryResponse(u URL, rdr io.ReadCloser) *BinaryResponse {
-	return &BinaryResponse{url: u, inner: rdr}
+func NewBinaryResponse(rq *Request, rdr io.ReadCloser) *BinaryResponse {
+	return &BinaryResponse{rq: rq, inner: rdr}
 }
 
-func (br *BinaryResponse) URL() URL              { return br.url }
+func (br *BinaryResponse) Request() *Request     { return br.rq }
 func (br *BinaryResponse) Class() Class          { return BinaryClass }
 func (br *BinaryResponse) Status() Status        { return OK }
 func (br *BinaryResponse) Reader() io.ReadCloser { return br }
@@ -40,23 +40,23 @@ func (br *BinaryResponse) Read(b []byte) (n int, err error) {
 }
 
 type UUEncodedResponse struct {
-	url URL
+	rq  *Request
 	uu  *uuencode.Reader
 	cls io.Closer
 }
 
 var _ Response = &UUEncodedResponse{}
 
-func NewUUEncodedResponse(u URL, rdr io.ReadCloser) *UUEncodedResponse {
-	uu := uuencode.NewReader(DotReader(rdr), nil)
-	return &UUEncodedResponse{url: u, uu: uu, cls: rdr}
+func NewUUEncodedResponse(rq *Request, rdr io.ReadCloser) *UUEncodedResponse {
+	uu := uuencode.NewReader(NewTextReader(rdr), nil)
+	return &UUEncodedResponse{rq: rq, uu: uu, cls: rdr}
 }
 
 func (br *UUEncodedResponse) File() (string, bool)      { return br.uu.File() }
 func (br *UUEncodedResponse) Mode() (os.FileMode, bool) { return br.uu.Mode() }
 
+func (br *UUEncodedResponse) Request() *Request     { return br.rq }
 func (br *UUEncodedResponse) Class() Class          { return BinaryClass }
-func (br *UUEncodedResponse) URL() URL              { return br.url }
 func (br *UUEncodedResponse) Reader() io.ReadCloser { return br }
 func (br *UUEncodedResponse) Close() error          { return br.cls.Close() }
 func (br *UUEncodedResponse) Status() Status        { return OK }
@@ -67,18 +67,18 @@ func (br *UUEncodedResponse) Read(b []byte) (n int, err error) {
 
 type TextResponse struct {
 	rdr io.Reader
-	url URL
+	rq  *Request
 	cls io.ReadCloser
 }
 
 var _ Response = &TextResponse{}
 
-func NewTextResponse(u URL, rdr io.ReadCloser) *TextResponse {
-	return &TextResponse{url: u, rdr: DotReader(rdr), cls: rdr}
+func NewTextResponse(rq *Request, rdr io.ReadCloser) *TextResponse {
+	return &TextResponse{rq: rq, rdr: NewTextReader(rdr), cls: rdr}
 }
 
 func (br *TextResponse) Class() Class          { return TextClass }
-func (br *TextResponse) URL() URL              { return br.url }
+func (br *TextResponse) Request() *Request     { return br.rq }
 func (br *TextResponse) Status() Status        { return OK }
 func (br *TextResponse) Reader() io.ReadCloser { return br }
 func (br *TextResponse) Close() error          { return br.cls.Close() }
@@ -88,7 +88,7 @@ func (br *TextResponse) Read(b []byte) (n int, err error) {
 }
 
 type DirResponse struct {
-	url    URL
+	rq     *Request
 	cls    io.Closer
 	scn    *bufio.Scanner
 	rdr    io.Reader
@@ -101,20 +101,20 @@ type DirResponse struct {
 
 var _ Response = &DirResponse{}
 
-func NewDirResponse(u URL, rdr io.ReadCloser) *DirResponse {
-	dot := DotReader(rdr)
+func NewDirResponse(rq *Request, rdr io.ReadCloser) *DirResponse {
+	dot := NewTextReader(rdr)
 	scn := bufio.NewScanner(dot)
 	return &DirResponse{
-		url: u,
+		rq:  rq,
 		cls: rdr,
 		scn: scn,
 		rdr: dot,
 	}
 }
 
-func (br *DirResponse) Status() Status { return OK }
-func (br *DirResponse) Class() Class   { return DirClass }
-func (br *DirResponse) URL() URL       { return br.url }
+func (br *DirResponse) Status() Status    { return OK }
+func (br *DirResponse) Class() Class      { return DirClass }
+func (br *DirResponse) Request() *Request { return br.rq }
 
 func (br *DirResponse) Reader() io.ReadCloser {
 	return &readCloser{
@@ -151,7 +151,7 @@ retry:
 		goto retry
 	}
 
-	if err := unmarshalDirent(txt, br.line, dir); err != nil {
+	if err := parseDirent(txt, br.line, dir); err != nil {
 		br.err = err
 		return false
 	}

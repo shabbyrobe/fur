@@ -1,6 +1,7 @@
 package gopher
 
 import (
+	"bufio"
 	"fmt"
 	"strconv"
 	"strings"
@@ -17,7 +18,24 @@ type Dirent struct {
 	Raw   string
 }
 
-func unmarshalDirent(txt string, line int, dir *Dirent) error {
+func (d *Dirent) write(w *bufio.Writer) error {
+	w.WriteByte(byte(d.ItemType))
+	w.WriteString(d.Display)
+	w.WriteByte('\t')
+	w.WriteString(d.URL.Selector)
+	w.WriteByte('\t')
+	w.WriteString(d.URL.Hostname)
+	w.WriteByte('\t')
+	w.WriteString(strconv.FormatInt(int64(d.URL.Port), 10))
+	if d.Plus {
+		w.WriteByte('\t')
+		w.WriteByte('+')
+	}
+	_, err := w.Write(crlf)
+	return err
+}
+
+func parseDirent(txt string, line int, dir *Dirent) error {
 	tsz := len(txt)
 
 	dir.URL = URL{}

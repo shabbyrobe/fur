@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -56,4 +57,61 @@ func termSize() (x, y int) {
 		x, y = 80, 25
 	}
 	return x, y
+}
+
+func copyWithLcut(out io.Writer, rs io.Reader, lcut int) error {
+	var scratch = make([]byte, 8192)
+	var buf = make([]byte, 0, 8192)
+	var readDone = false
+	var pos = 0
+
+	for !readDone {
+		var idx = -1
+		for idx < 0 && !readDone {
+			buf = buf[:copy(buf, buf[pos:])]
+			pos = 0
+
+			n, err := rs.Read(scratch)
+			if err != nil && err != io.EOF {
+				return err
+			}
+			buf = append(buf, scratch[:n]...)
+			if err == io.EOF {
+				readDone = true
+			}
+			idx = bytes.IndexByte(buf, '\n')
+		}
+
+	again:
+		var line []byte
+		if idx >= 0 {
+			end := pos + idx + 1
+			line = buf[pos:end]
+			pos = end
+		} else if readDone {
+			line = buf[pos:]
+		} else {
+			continue
+		}
+
+		if len(line) > 0 {
+			lmax := len(line)
+			if lmax > 0 && line[lmax-1] == '\r' {
+				lmax--
+			}
+			cut := lcut
+			if cut > lmax {
+				cut = lmax
+			}
+			line = line[cut:]
+			out.Write(line)
+		}
+
+		if !readDone {
+			idx = bytes.IndexByte(buf[pos:], '\n')
+			goto again
+		}
+	}
+
+	return nil
 }

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -o errexit -o nounset -o pipefail
 script_abspath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 sels=(
@@ -16,15 +15,21 @@ dl-save() {
     url="$1"
     fname="$2"
 
-    if ! out="$( fur --txt "$url" )"; then
+    ok=""
+    for (( i=0; i<3; i++ )); do
+        if out="$( fur --txt "$url" )"; then
+            ok=1
+            break
+        fi
+        echo "retry $i"
+        sleep 1
+    done
+
+    if [[ -z "$ok" ]]; then
         return 1
     fi
 
-    {
-        date +%s
-        echo "$url"
-        echo -n "$out"
-    } > "$fname"
+    echo -en "FUR-DUMP $( date -Is ) $url\n$out" > "$fname"
 }
 
 cmd-hosts() {
@@ -36,9 +41,11 @@ cmd-hosts() {
 
 cmd-caps-all() {
     cmd-hosts | while read -r host; do
-        echo "$host"
-        url="gopher://$host/0caps.txt"
-        dl-save "$url" "caps-$host.txt" || true
+        if [[ ! -f "caps-$host.txt" ]]; then
+            echo "$host"
+            url="gopher://$host/0caps.txt"
+            dl-save "$url" "caps-$host.txt" || true
+        fi
     done
 }
 

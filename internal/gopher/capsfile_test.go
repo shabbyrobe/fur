@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func TestParseCapsSeparateComments(t *testing.T) {
@@ -21,7 +19,8 @@ func TestParseCapsSeparateComments(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	spew.Dump(caps)
+	_ = caps
+	// spew.Dump(caps)
 }
 
 func TestParseCapsInvalidKV(t *testing.T) {
