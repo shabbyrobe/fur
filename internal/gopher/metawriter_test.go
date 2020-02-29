@@ -13,7 +13,7 @@ func TestMetaWriterOneInfoOnly(t *testing.T) {
 	mw.Info(Text, "yep", "sel")
 	MustFlush(mw)
 
-	expected := "+INFO: 0yep\tsel\tlocalhost\t12345+\r\n"
+	expected := "+INFO: 0yep\tsel\tlocalhost\t12345\t+\r\n"
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
 	}
@@ -29,9 +29,9 @@ func TestMetaWriterMultipleInfoOnly(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
-		"+INFO: 0yep1\tsel1\tlocalhost\t12345+" + "\r\n\r\n" +
-		"+INFO: 1yep2\tsel2\tlocalhost\t12345+" + "\r\n\r\n" +
-		"+INFO: 9yep3\tsel3\tlocalhost\t12345+" + "\r\n"
+		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
+		"+INFO: 1yep2\tsel2\tlocalhost\t12345\t+" + "\r\n\r\n" +
+		"+INFO: 9yep3\tsel3\tlocalhost\t12345\t+" + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
@@ -53,7 +53,7 @@ func TestMetaWriterOneInfoWithOneRecord(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
-		"+INFO: 0yep1\tsel1\tlocalhost\t12345+" + "\r\n\r\n" +
+		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK:\r\nhello\r\nworld" + "\r\n"
 
 	if buf.String() != expected {
@@ -76,7 +76,7 @@ func TestMetaWriterOneInfoWithMultipleRecords(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
-		"+INFO: 0yep1\tsel1\tlocalhost\t12345+" + "\r\n\r\n" +
+		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK1:\r\nyep1" + "\r\n\r\n" +
 		"+QUACK2:\r\nyep2" + "\r\n"
 
@@ -109,11 +109,11 @@ func TestMetaWriterMultipleInfoWithMultipleRecords(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
-		"+INFO: 0yep1\tsel1\tlocalhost\t12345+" + "\r\n\r\n" +
+		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK1:\r\nyep1" + "\r\n\r\n" +
 		"+QUACK2:\r\nyep2" + "\r\n\r\n" +
 		"" +
-		"+INFO: 1yep2\tsel2\tlocalhost\t12345+" + "\r\n\r\n" +
+		"+INFO: 1yep2\tsel2\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK3:\r\nyep3" + "\r\n\r\n" +
 		"+QUACK4:\r\nyep4" + "\r\n"
 
@@ -138,7 +138,7 @@ func TestMetaWriterValueNormalisesCRLF(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
-		"+INFO: 0yep\tsel\tlocalhost\t12345+" + "\r\n\r\n" +
+		"+INFO: 0yep\tsel\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK:" + "\r\n" +
 		"line1" + "\r\n" +
 		"line2" + "\r\n"
@@ -166,7 +166,7 @@ func TestMetaWriterValueCRLFOverWriteBoundary(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
-		"+INFO: 0yep\tsel\tlocalhost\t12345+" + "\r\n\r\n" +
+		"+INFO: 0yep\tsel\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK:" + "\r\n" +
 		"line1" + "\r\n" +
 		"line2" + "\r\n"
@@ -200,7 +200,7 @@ func TestMetaWriterValueCRLFExcludesRecords(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
-		"+INFO: 0yep\tsel\tlocalhost\t12345+" + "\r\n\r\n" + // INFO should not be excluded
+		"+INFO: 0yep\tsel\tlocalhost\t12345\t+" + "\r\n\r\n" + // INFO should not be excluded
 		"+FOO:" + "\r\n" +
 		"yep" + "\r\n\r\n" +
 		"+BAR:" + "\r\n" +
