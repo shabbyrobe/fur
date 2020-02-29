@@ -16,13 +16,6 @@ I shoved some nice things in here because it was easy:
   I can't find anything that uses `6` anywhere.
 - Error detection
 
-The experiments I'm currently looking at:
-
-- CAPS file handling
-- Gopher Plus/II
-- TLS
-- Separate timeouts
-
 ## Expectation Management
 
 Feel free to use this or take bits from it as you see fit (MIT license == go
@@ -43,7 +36,7 @@ Easy!
     $ fur gopher.floodgap.com
     $ fur gopher://gopher.floodgap.com
     $ fur hngopher.com
-    $ fur -x=i search "hacker news"
+    $ fur -tx=i search "hacker news"
 
 Then if you see a link, just copy and paste it in a subsequent invocation to `fur`.
 
@@ -51,9 +44,10 @@ To get the raw output, use the `--raw` flag.
 
 HTML item types (`h`) work best if you have `w3m` installed.
 
+
 ## Links
 
-Gopher sites:
+### Gopher sites:
 
 - [GopherPedia](gopher://gopherpedia.com/)
 - [Floodgap](gopher://gopher.floodgap.com/)
@@ -63,7 +57,8 @@ Gopher sites:
 - [Hacker News](gopher://hngopher.com/)
 - [Metafilter](gopher://gopher.metafilter.com)
 
-Gopher history/general:
+
+### Gopher history/general:
 
 - gopher://gopher.viste.fr/1/gopher-faq
 - https://tedium.co/2017/06/22/modern-day-gopher-history/
@@ -71,8 +66,16 @@ Gopher history/general:
 - https://arstechnica.com/tech-policy/2009/11/the-web-may-have-won-but-gopher-tunnels-on/
 - http://gopher.floodgap.com/overbite/relevance.html
 - http://muffinlabs.com/2013/06/12/goper2000---a-modern-gopher-server/
+- https://news.ycombinator.com/item?id=12269784
+- https://www.ics.uci.edu/~rohit/IEEE-L7-http-gopher.html
 
-Server software:
+
+### Gopher articles of interest:
+
+- https://jfm.carcosa.net/blog/computing/hugo-gopher/
+
+
+### Server software:
 
 - https://github.com/gophernicus/gophernicus
 - https://github.com/muffinista/gopher2000/
@@ -83,8 +86,13 @@ Server software:
 - https://github.com/asterIRC/uGopherServer
 - https://github.com/michael-lazar/flask-gopher
 - http://gofish.sourceforge.net/
+- https://github.com/ix/geomyidae
+- http://r-36.net/scm/geomyidae/file/CGI.html (Basic Gopher+ meta)
+- http://aftershock.sourceforge.net/ (Ancient, Java)
+- http://mateusz.viste.fr/attic/grumpy/ (GPL, last updated 2011)
 
-Gopher protocol:
+
+### Gopher protocol:
 
 - https://tools.ietf.org/html/rfc1436
 - https://sdfeu.org/w/tutorials:gopher
@@ -93,26 +101,38 @@ Gopher protocol:
 - https://groups.google.com/forum/#!msg/comp.sys.mac.announce/xbgsusdfETc/S2793OidrSQJ
 - https://lists.debian.org/gopher-project/2018/02/msg00038.html
 
-TLS:
+
+### TLS:
+
+Seems that the best way to handle this is to allow clients to just talk TLS.
+
+Might also be good to return an explicit error if a client attempts to use
+STARTTLS.
 
 - https://dataswamp.org/~solene/2019-03-07-gopher-server-tls.html
 - https://alexschroeder.ch/wiki/Comments_on_2018-01-10_Encrypted_Gopher
 - https://github.com/0x16h/gopher-tls/
 - https://news.ycombinator.com/item?id=20171646
+- https://news.ycombinator.com/item?id=16811407
 - gopher://tilde.team/0/~rain1/phlog/20190608-encrypting-gopher.txt
+- https://lists.debian.org/gopher-project/2018/02/msg00038.html
 
-Crawlers:
+
+### Crawlers:
 
 - gopher://gopherproject.org/1/eomyidae
 
-Clients:
+
+### Clients:
 
 - https://github.com/jgoerzen/gopher
 - https://thelambdalab.xyz/elpher/
 - https://rawtext.club/~sloum/bombadillo.html (https://tildegit.org/sloum/bombadillo)
 - https://github.com/jankammerath/gophie
+- https://github.com/solderpunk/VF-1
 
-Gemini:
+
+### Gemini:
 
 - gopher://zaibatsu.circumlunar.space/1/~solderpunk/gemini
 

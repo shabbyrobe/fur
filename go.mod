@@ -5,13 +5,15 @@ go 1.14
 require (
 	github.com/MichaelMure/go-term-text v0.2.6
 	github.com/bbrks/wrap v2.3.0+incompatible
-	github.com/davecgh/go-spew v1.1.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.9.0
 	github.com/gomarkdown/markdown v0.0.0-20200127000047-1813ea067497
 	github.com/mattn/go-tty v0.0.3
 	github.com/mattn/godown v0.0.0-20200217152941-afc959f6a561
-	github.com/shabbyrobe/cmdy v0.7.6
+	github.com/shabbyrobe/cmdy v0.7.7
+	github.com/shabbyrobe/golib/profiletools v0.0.0-20200222021437-6658cb14cbf2
 	github.com/shabbyrobe/termimg v0.0.0-20200211052354-57461d77496f
 	golang.org/x/image v0.0.0-20200119044424-58c23975cae1
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 )
