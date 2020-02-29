@@ -49,6 +49,19 @@ type MetaWriter interface {
 	Flush() error
 }
 
+type MetaEntry struct {
+	Record string
+	Value  string
+}
+
+func WriteMeta(mw MetaWriter, i ItemType, disp, sel string, meta []MetaEntry) error {
+	mw.Info(i, disp, sel)
+	for _, e := range meta {
+		mw.WriteRecord(e.Record, e.Value)
+	}
+	return mw.Flush()
+}
+
 type metaWriter struct {
 	bufw       *bufio.Writer
 	rq         *Request

@@ -127,6 +127,10 @@ func (dw *DirWriter) Text(disp, sel string) error {
 	return dw.Selector(Text, disp, sel)
 }
 
+func (dw *DirWriter) Root(disp string) error {
+	return dw.Selector(Dir, disp, "")
+}
+
 func (dw *DirWriter) Dir(disp, sel string) error {
 	return dw.Selector(Dir, disp, sel)
 }
