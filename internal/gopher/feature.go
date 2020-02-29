@@ -17,6 +17,7 @@ const (
 	capKeyGopherIIbis   = "SupportsGopherIIbis"
 	capKeyGopherII      = "SupportsGopherII"
 	capKeyGopherPlusAsk = "SupportsGopherPlusAsk"
+	capKeyTLSPort       = "ServerTLSPort"
 )
 
 type FeatureStatus int

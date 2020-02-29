@@ -38,6 +38,11 @@ func (cf *CapsFile) Version() int { return cf.version }
 
 func (cf *CapsFile) ExpiresAfter() time.Duration { return cf.expiresAfter }
 
+func (cf *CapsFile) TLSPort() int {
+	v, _, _ := cf.Int64(capKeyTLSPort)
+	return int(v)
+}
+
 func (cf *CapsFile) Supports(feature Feature) FeatureStatus {
 	switch feature {
 	case FeatureIIbis:

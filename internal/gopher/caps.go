@@ -14,6 +14,9 @@ type Caps interface {
 	ServerInfo() (*ServerInfo, error)
 	Software() (name, version string)
 
+	// TLSPort for the server; returns 0 if not present or configured.
+	TLSPort() int
+
 	// Default text encoding for content types 0 and 1.
 	// If this returns an empty string, UTF-8 is presumed.
 	DefaultEncoding() string
@@ -39,6 +42,7 @@ func (defaultCaps) Supports(feature Feature) FeatureStatus { return FeatureUnsup
 func (defaultCaps) ServerInfo() (*ServerInfo, error)       { return nil, nil }
 func (defaultCaps) Software() (name, version string)       { return "", "" }
 func (defaultCaps) DefaultEncoding() string                { return "UTF-8" }
+func (defaultCaps) TLSPort() int                           { return 0 }
 
 func (defaultCaps) PathConfig() (*PathConfig, error) {
 	up := UnixPathConfig
