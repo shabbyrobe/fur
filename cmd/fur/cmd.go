@@ -31,9 +31,31 @@ The port is optional, and defaults to ':70'. The 'search' portion can also be pr
 via the '--search' flag or the '<search>' argument.
 `
 
+type urlVar gopher.URL
+
+func (uv urlVar) URL() gopher.URL {
+	return gopher.URL(uv)
+}
+
+func (uv urlVar) String() string {
+	return gopher.URL(uv).String()
+}
+
+func (uv *urlVar) Set(s string) error {
+	if s == "veronica2" || s == "search" {
+		s = "gopher://gopher.floodgap.com/7/v2/vs"
+	}
+	u, err := gopher.ParseURL(s)
+	if err != nil {
+		return err
+	}
+	*uv = urlVar(u)
+	return nil
+}
+
 type command struct {
 	timeout time.Duration
-	url     string
+	url     urlVar
 
 	raw bool // Raw mode
 	txt bool // Raw text mode
@@ -97,7 +119,7 @@ func (cmd *command) Help() cmdy.Help {
 
 			cmdy.Example{
 				Desc:    "Dump directory as json, excluding 'i' types",
-				Command: `-x=i -j gopher.floodgap.com/1/world`,
+				Command: `-tx=i -j gopher.floodgap.com/1/world`,
 			},
 		},
 	}
@@ -130,27 +152,20 @@ func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.search, "search", "", "Search (overrides URL)")
 	flags.StringVar(&cmd.w3m, "w3m", "", "Path to w3m for HTML rendering (detects)")
 	flags.StringVar(&cmd.htmlMode, "html", "godown", "HTML mode (godown, w3m)")
-	flags.Var(&cmd.include, "i", "Include these item types. Pass as a string, no spaces or commas. Can pass multiple times. -x=12 is the same as -x=1 -x=2")
-	flags.Var(&cmd.exclude, "x", "Exclude these item types. Takes precedence over -i. See -i for details.")
+	flags.Var(&cmd.include, "ti", "Include these item types. Pass as a string, no spaces or commas. Can pass multiple times. -x=12 is the same as -x=1 -x=2")
+	flags.Var(&cmd.exclude, "tx", "Exclude these item types. Takes precedence over -i. See -i for details.")
 
 	flags.IntVar(&cmd.spam, "spam", 0, ""+
 		"Spam the URL with this many requests, print stats. Similar to 'ab'. Don't use on servers that aren't yours to spam.")
 	flags.IntVar(&cmd.spamWorkers, "workers", 10, ""+
 		"Number of workers to use when spamming.")
 
-	args.String(&cmd.url, "url", "Gopher url (e.g. 'gopher://gopher.floodgap.com'). Scheme is optional. Can also use the alias 'search' to search against Veronica2.")
+	args.Var(&cmd.url, "url", "Gopher url (e.g. 'gopher://gopher.floodgap.com'). Scheme is optional. Can also use the alias 'search' to search against Veronica2.")
 	args.StringOptional(&cmd.search, "search", "", "Search (overrides search portion of URL)")
 }
 
 func (cmd *command) URL() (gopher.URL, error) {
-	ustr := cmd.url
-	if ustr == "veronica2" || ustr == "search" {
-		ustr = "gopher://gopher.floodgap.com/7/v2/vs"
-	}
-	u, err := gopher.ParseURL(ustr)
-	if err != nil {
-		return u, err
-	}
+	u := cmd.url.URL()
 	if cmd.search != "" {
 		u.Search = cmd.search
 	}

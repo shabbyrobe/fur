@@ -34,7 +34,7 @@ dl-save() {
 
 cmd-hosts() {
     for sel in "${sels[@]}"; do
-        fur -x=i -j gopher://gopher.floodgap.com/"$sel" |
+        fur -tx=i -j gopher://gopher.floodgap.com/"$sel" |
             jq -r '.hostname'
     done
 }
