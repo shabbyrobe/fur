@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"io"
+	"net"
 	"net/textproto"
 )
 
@@ -66,4 +67,13 @@ func (rc nilReadCloser) Read(b []byte) (n int, err error) {
 
 func (rc nilReadCloser) Close() error {
 	return nil
+}
+
+type bufferedConn struct {
+	net.Conn
+	rdr io.Reader
+}
+
+func (bc *bufferedConn) Read(b []byte) (n int, err error) {
+	return bc.rdr.Read(b)
 }

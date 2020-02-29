@@ -3,6 +3,7 @@ package gopher
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -18,6 +19,8 @@ type Client struct {
 
 	Recorder        Recorder
 	CapsSource      CapsSource
+	TLSClientConfig *tls.Config
+	TLSMode         TLSMode
 }
 
 func (c *Client) timeoutDial() time.Duration {
@@ -28,11 +31,11 @@ func (c *Client) timeoutDial() time.Duration {
 	return timeout
 }
 
-// FIXME: separate timeouts
+// FIXME: timeouts are currently shared with dial; should be separated
 func (c *Client) timeoutRead() time.Duration  { return c.timeoutDial() }
 func (c *Client) timeoutWrite() time.Duration { return c.timeoutDial() }
 
-func (c *Client) dial(ctx context.Context, rq *Request) (*net.TCPConn, error) {
+func (c *Client) dial(ctx context.Context, rq *Request, tlsMode TLSMode) (net.Conn, error) {
 	if !rq.url.CanFetch() {
 		return nil, fmt.Errorf("gopher: cannot fetch URL %q", rq.url)
 	}
@@ -42,7 +45,19 @@ func (c *Client) dial(ctx context.Context, rq *Request) (*net.TCPConn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return conn.(*net.TCPConn), nil
+
+	if tlsMode.shouldAttempt() {
+		var tlsConf *tls.Config
+		if c.TLSClientConfig == nil {
+			tlsConf = &tls.Config{}
+		} else {
+			tlsConf = c.TLSClientConfig.Clone()
+		}
+		tlsConf.ServerName = rq.url.Hostname
+		conn = tls.Client(conn, tlsConf)
+	}
+
+	return conn, nil
 }
 
 // send the request for URL u to conn. A non-nil response is returned if the response is
@@ -51,7 +66,7 @@ func (c *Client) dial(ctx context.Context, rq *Request) (*net.TCPConn, error) {
 //
 // Callers must use the reader returned by this function rather than the conn to read
 // the response.
-func (c *Client) send(ctx context.Context, conn conn, rq *Request, at time.Time, interceptErrors bool) (conn, error) {
+func (c *Client) send(ctx context.Context, conn net.Conn, rq *Request, at time.Time, interceptErrors bool) (net.Conn, error) {
 	var rec Recording
 
 	caps, err := c.loadCaps(ctx, rq.url.Hostname, rq.url.Port)
@@ -117,7 +132,7 @@ func (c *Client) send(ctx context.Context, conn conn, rq *Request, at time.Time,
 			if rec != nil {
 				rec.SetStatus(status, msg)
 			}
-			return NewError(rq.URL(), status, msg, confidence)
+			return NewError(rq.url, status, msg, confidence)
 		})
 		if rsErr != nil {
 			rsErr.Raw = scratch
@@ -143,14 +158,24 @@ func (c *Client) loadCaps(ctx context.Context, host string, port string) (caps C
 }
 
 func (c *Client) dialAndSend(ctx context.Context, rq *Request, at time.Time, interceptErrors bool) (net.Conn, error) {
-	conn, err := c.dial(ctx, rq)
+	tlsMode := c.TLSMode.resolve(rq.url.Secure)
+	conn, err := c.dial(ctx, rq, tlsMode)
 	if err != nil {
 		return nil, err
 	}
 
+retry:
 	rdr, err := c.send(ctx, conn, rq, at, interceptErrors)
 	if err != nil {
 		conn.Close()
+
+		if _, ok := err.(tls.RecordHeaderError); ok && tlsMode.downgrade() {
+			tlsMode = TLSDisabled
+			conn, err = c.dial(ctx, rq, tlsMode)
+			if err == nil {
+				goto retry
+			}
+		}
 		return nil, err
 	}
 
@@ -162,6 +187,9 @@ func (c *Client) Fetch(ctx context.Context, rq *Request) (Response, error) {
 	if rq.url.Root {
 		it = Dir
 	}
+
+	// FIXME: meta response
+
 	if it.IsBinary() || c.ExtraBinaryTypes[it] {
 		return c.Binary(ctx, rq)
 	}
@@ -187,7 +215,7 @@ func (c *Client) Dir(ctx context.Context, rq *Request) (*DirResponse, error) {
 	start := time.Now()
 	conn, err := c.dialAndSend(ctx, rq, start, !c.DisableErrorIntercept)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gopher: dir request failed: %w", err)
 	}
 	return NewDirResponse(rq, conn), nil
 }
@@ -226,22 +254,4 @@ func (c *Client) Raw(ctx context.Context, rq *Request) (Response, error) {
 		return nil, err
 	}
 	return NewBinaryResponse(rq, conn), nil
-}
-
-type conn interface {
-	io.Reader
-	io.Writer
-	io.Closer
-
-	SetReadDeadline(t time.Time) error
-	SetWriteDeadline(t time.Time) error
-}
-
-type bufferedConn struct {
-	conn
-	rdr io.Reader
-}
-
-func (bc *bufferedConn) Read(b []byte) (n int, err error) {
-	return bc.rdr.Read(b)
 }

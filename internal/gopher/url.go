@@ -98,7 +98,11 @@ func (u URL) URL() URL { return u }
 
 func (u URL) String() string {
 	var out strings.Builder
-	out.WriteString("gopher://")
+	if u.Secure {
+		out.WriteString("gophers://")
+	} else {
+		out.WriteString("gopher://")
+	}
 
 	if strings.IndexByte(u.Hostname, ':') >= 0 {
 		out.WriteByte('[')
@@ -196,8 +200,14 @@ func ParseURL(s string) (gu URL, err error) {
 		if err != nil {
 			return URL{}, err
 		}
-	} else if u.Scheme != "gopher" {
-		return URL{}, fmt.Errorf("gopher: invalid URL %q", u)
+	} else {
+		switch u.Scheme {
+		case "gopher":
+		case "gophers":
+			gu.Secure = true
+		default:
+			return URL{}, fmt.Errorf("gopher: invalid URL %q", u)
+		}
 	}
 
 	h := u.Host

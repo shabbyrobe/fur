@@ -2,6 +2,7 @@ package gopher
 
 import (
 	"io"
+	"net"
 	"time"
 )
 
@@ -16,9 +17,9 @@ type Recording interface {
 	Done(at time.Time)
 }
 
-func recordConn(rec Recording, c conn) conn {
+func recordConn(rec Recording, c net.Conn) net.Conn {
 	return &recordedConn{
-		conn: c,
+		Conn: c,
 		rec:  rec,
 		rdr:  io.TeeReader(c, rec.ResponseWriter()),
 		wrt:  io.MultiWriter(c, rec.RequestWriter()),
@@ -26,7 +27,7 @@ func recordConn(rec Recording, c conn) conn {
 }
 
 type recordedConn struct {
-	conn
+	net.Conn
 	rec Recording
 	rdr io.Reader
 	wrt io.Writer
@@ -42,5 +43,5 @@ func (rc *recordedConn) Write(b []byte) (n int, err error) {
 
 func (rc *recordedConn) Close() error {
 	rc.rec.Done(time.Now())
-	return rc.conn.Close()
+	return rc.Conn.Close()
 }

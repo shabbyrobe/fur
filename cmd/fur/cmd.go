@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -43,9 +44,12 @@ type command struct {
 	allMeta     bool
 	outFile     string
 	outAutoFile bool
+	tlsInsist   bool
+	tlsDisabled bool
 	w3m         string
 	htmlMode    string
 	upscale     bool
+	insecure    bool
 	lcut        int
 	include     flags.StringList
 	exclude     flags.StringList
@@ -107,16 +111,20 @@ func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.ballFile, "ball", "", ``+
 		`Append request to this furball (like HAR, but crappier)`)
 
-	//  Useful for servers that misuse the '1' item type and just prepend 'i' to every line of a random file regardless of what it contains
+	// Useful for servers that misuse the '1' item type and just prepend 'i' to every line
+	// of a random file regardless of what it contains:
 	flags.IntVar(&cmd.lcut, "lcut", 0, "In raw mode, cut this many chars off the left.")
 
 	flags.IntVar(&cmd.cols, "cols", 0, "Wrap columns, 0 to detect")
 	flags.IntVar(&cmd.maxEmpty, "maxempty", 2, "Maximum number of empty 'i' lines to print in a row (0 = unlimited)")
 	flags.BoolVar(&cmd.upscale, "upscale", true, "Upscale images")
+	flags.BoolVar(&cmd.insecure, "noverify", false, "Insecure TLS - skip hostname verification")
 	flags.BoolVar(&cmd.json, "j", false, "Render as JSON; will show base64 for binary, string for text and jsonl/ndjson for directories")
 	flags.BoolVar(&cmd.meta, "meta", false, "Request GopherIIbis metadata for this file")
 	flags.BoolVar(&cmd.allMeta, "allmeta", false, "Request GopherIIbis metadata for the entire directory")
 	flags.BoolVar(&cmd.outAutoFile, "O", false, "Output to file, infer name from selector")
+	flags.BoolVar(&cmd.tlsInsist, "tls", false, "Insist on TLS")
+	flags.BoolVar(&cmd.tlsDisabled, "notls", false, "Do not attempt to automatically connect using TLS")
 	flags.DurationVar(&cmd.timeout, "t", 20*time.Second, "Timeout")
 	flags.StringVar(&cmd.outFile, "o", "", "Output file")
 	flags.StringVar(&cmd.search, "search", "", "Search (overrides URL)")
@@ -160,10 +168,22 @@ func (cmd *command) URL() (gopher.URL, error) {
 func (cmd *command) Client() *gopher.Client {
 	client := &gopher.Client{
 		Timeout: cmd.timeout,
+		TLSMode: gopher.TLSWithInsecure,
+	}
+	if cmd.tlsInsist {
+		client.TLSMode = gopher.TLSInsist
+	} else if cmd.tlsDisabled {
+		client.TLSMode = gopher.TLSDisabled
 	}
 	if cmd.ball != nil {
 		client.Recorder = cmd.ball // 'nil interface' hazard
 	}
+	if cmd.insecure {
+		client.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
 	return client
 }
 
@@ -422,6 +442,11 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 		return err
 	}
 	client := cmd.Client()
+	if client.TLSClientConfig == nil {
+		client.TLSClientConfig = &tls.Config{}
+	}
+	client.TLSClientConfig.ClientSessionCache = tls.NewLRUClientSessionCache(1000)
+
 	stderr := ctx.Stderr()
 
 	var (

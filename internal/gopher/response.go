@@ -88,13 +88,12 @@ func (br *TextResponse) Read(b []byte) (n int, err error) {
 }
 
 type DirResponse struct {
-	rq     *Request
-	cls    io.Closer
-	scn    *bufio.Scanner
-	rdr    io.Reader
-	err    error
-	line   int
-	strict bool
+	rq   *Request
+	cls  io.Closer
+	scn  *bufio.Scanner
+	rdr  io.Reader
+	err  error
+	line int
 
 	pos, n int
 }

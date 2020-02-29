@@ -3,6 +3,7 @@ package gopher
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"io"
 	"net"
@@ -22,8 +23,8 @@ var (
 	ErrServerClosed = errors.New("gopher: server closed")
 )
 
-func ListenAndServe(addr string, host string, handler Handler) error {
-	server := &Server{Handler: handler}
+func ListenAndServe(addr string, host string, handler Handler, meta MetaHandler) error {
+	server := &Server{Handler: handler, MetaHandler: meta}
 	return server.ListenAndServe(addr, host)
 }
 
@@ -36,6 +37,7 @@ type Server struct {
 	RequestSizeLimit    int
 	ReadTimeout         time.Duration
 	ReadSelectorTimeout time.Duration
+	TLSConfig           *tls.Config
 
 	conns     map[net.Conn]struct{}
 	listeners map[net.Listener]struct{}
@@ -206,9 +208,10 @@ func (srv *Server) requestSizeLimit() int {
 }
 
 type serveConn struct {
-	srv *Server
-	rwc net.Conn
-	buf []byte
+	srv   *Server
+	rwc   net.Conn
+	buf   []byte
+	isTLS bool
 
 	host string
 	port string
@@ -227,8 +230,6 @@ func (c *serveConn) serve(ctx context.Context) {
 
 	defer c.rwc.Close()
 	defer c.srv.removeConn(c.rwc)
-
-	c.rwc.SetReadDeadline(time.Now().Add(c.srv.readSelectorTimeout()))
 
 	req, err := c.readRequest(ctx)
 	if err != nil {
@@ -251,12 +252,42 @@ func (c *serveConn) serve(ctx context.Context) {
 	}
 }
 
+func (c *serveConn) upgradeTLS(ctx context.Context, buf []byte) (err error) {
+	// TLS in this library follows what I will refer to as the "Lohmann Model":
+	// https://lists.debian.org/gopher-project/2018/02/msg00038.html
+	//
+	// So ASCII 0x16 (SYN) is reserved and is now forbidden as the first character of a
+	// selector; if 0x16 is sent, the server presumes it commences a TLS handshake.
+	//
+	if c.srv.TLSConfig == nil || c.buf[0] != 0x16 || c.isTLS {
+		return nil
+	}
+	bufConn := &bufferedConn{
+		Conn: c.rwc,
+		rdr:  io.MultiReader(bytes.NewReader(buf), c.rwc),
+	}
+	c.isTLS = true
+	c.rwc = tls.Server(bufConn, c.srv.TLSConfig)
+	return nil
+}
+
 func (c *serveConn) readRequest(ctx context.Context) (req *Request, err error) {
+retryTLS:
+	c.rwc.SetReadDeadline(time.Now().Add(c.srv.readSelectorTimeout()))
+
 	var nl, at, sz int
 	for {
 		n, err := c.rwc.Read(c.buf[sz:])
 		if err != nil && (err != io.EOF || n == 0) {
 			return nil, err
+		}
+		if sz == 0 && !c.isTLS && n > 0 {
+			if err := c.upgradeTLS(ctx, c.buf[:n]); err != nil {
+				return nil, err
+			}
+			if c.isTLS {
+				goto retryTLS
+			}
 		}
 		sz += n
 
@@ -307,6 +338,8 @@ found:
 
 	var body io.ReadCloser = c.rwc
 	if len(left) > 0 || hasData {
+		c.rwc.SetReadDeadline(time.Now().Add(c.srv.readTimeout()))
+
 		multi := io.MultiReader(bytes.NewReader(left), c.rwc)
 		body = &readCloser{
 			readFn:  multi.Read,
