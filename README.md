@@ -129,7 +129,8 @@ STARTTLS.
 - https://thelambdalab.xyz/elpher/
 - https://rawtext.club/~sloum/bombadillo.html (https://tildegit.org/sloum/bombadillo)
 - https://github.com/jankammerath/gophie
-- https://github.com/solderpunk/VF-1
+- https://github.com/solderpunk/VF-1 (TLS)
+- https://metacpan.org/pod/release/WGDAVIS/Net-Gopher-0.43/lib/Net/Gopher.pm (Gopher+)
 
 
 ### Gemini:

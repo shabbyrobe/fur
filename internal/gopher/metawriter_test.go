@@ -8,7 +8,7 @@ import (
 
 func TestMetaWriterOneInfoOnly(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
+	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep", "sel")
 	MustFlush(mw)
@@ -21,7 +21,7 @@ func TestMetaWriterOneInfoOnly(t *testing.T) {
 
 func TestMetaWriterMultipleInfoOnly(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaDir(), nil)
+	var rq = NewMetaRequest(MetaDir, mustParseURL("gopher://localhost:12345"))
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep1", "sel1")
 	mw.Info(Dir, "yep2", "sel2")
@@ -40,7 +40,7 @@ func TestMetaWriterMultipleInfoOnly(t *testing.T) {
 
 func TestMetaWriterOneInfoWithOneRecord(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
+	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep1", "sel1")
 
@@ -63,7 +63,7 @@ func TestMetaWriterOneInfoWithOneRecord(t *testing.T) {
 
 func TestMetaWriterOneInfoWithMultipleRecords(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
+	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep1", "sel1")
 
@@ -87,7 +87,7 @@ func TestMetaWriterOneInfoWithMultipleRecords(t *testing.T) {
 
 func TestMetaWriterMultipleInfoWithMultipleRecords(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaDir(), nil)
+	var rq = NewMetaRequest(MetaDir, mustParseURL("gopher://localhost:12345"))
 	mw := newMetaWriter(&buf, rq)
 
 	mw.Info(Text, "yep1", "sel1")
@@ -124,7 +124,7 @@ func TestMetaWriterMultipleInfoWithMultipleRecords(t *testing.T) {
 
 func TestMetaWriterValueNormalisesCRLF(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
+	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep", "sel")
 
@@ -150,7 +150,7 @@ func TestMetaWriterValueNormalisesCRLF(t *testing.T) {
 
 func TestMetaWriterValueCRLFOverWriteBoundary(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
+	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep", "sel")
 
@@ -177,8 +177,7 @@ func TestMetaWriterValueCRLFOverWriteBoundary(t *testing.T) {
 }
 
 func TestMetaWriterValueCRLFExcludesRecords(t *testing.T) {
-	var url = mustParseURL("gopher://localhost:12345").AsMetaItem("FOO", "BAR")
-	var rq = NewRequest(url, nil)
+	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"), "FOO", "BAR")
 	var buf bytes.Buffer
 
 	mw := newMetaWriter(&buf, rq)

@@ -27,24 +27,6 @@ type URL struct {
 	Search   string
 }
 
-func (u URL) AsMetaItem(records ...string) URL {
-	if len(records) == 0 {
-		u.Search = string(MetaItem)
-	} else {
-		u.Search = recordSearch(MetaItem, records...)
-	}
-	return u
-}
-
-func (u URL) AsMetaDir(records ...string) URL {
-	if len(records) == 0 {
-		u.Search = string(MetaDir)
-	} else {
-		u.Search = recordSearch(MetaDir, records...)
-	}
-	return u
-}
-
 // https://en.wikipedia.org/wiki/Gopher_(protocol)#URL_links
 func (u URL) WWW() (url string, ok bool) {
 	sel := u.Selector
@@ -278,19 +260,4 @@ func ParseURL(s string) (gu URL, err error) {
 	}
 
 	return gu, nil
-}
-
-func recordSearch(meta MetaType, records ...string) string {
-	var sb strings.Builder
-	sb.WriteByte(byte(meta))
-	for _, rec := range records {
-		if len(rec) == 0 {
-			continue
-		}
-		if rec[0] != '+' {
-			sb.WriteByte('+')
-		}
-		sb.WriteString(rec)
-	}
-	return sb.String()
 }

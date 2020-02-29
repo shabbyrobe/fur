@@ -68,6 +68,7 @@ type command struct {
 	outAutoFile bool
 	tlsInsist   bool
 	tlsDisabled bool
+	format      string
 	w3m         string
 	htmlMode    string
 	upscale     bool
@@ -150,6 +151,7 @@ func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.DurationVar(&cmd.timeout, "t", 20*time.Second, "Timeout")
 	flags.StringVar(&cmd.outFile, "o", "", "Output file")
 	flags.StringVar(&cmd.search, "search", "", "Search (overrides URL)")
+	flags.StringVar(&cmd.format, "format", "", "GopherIIbis 'format' (content-typeish) request. Not valid with -search")
 	flags.StringVar(&cmd.w3m, "w3m", "", "Path to w3m for HTML rendering (detects)")
 	flags.StringVar(&cmd.htmlMode, "html", "godown", "HTML mode (godown, w3m)")
 	flags.Var(&cmd.include, "ti", "Include these item types. Pass as a string, no spaces or commas. Can pass multiple times. -x=12 is the same as -x=1 -x=2")
@@ -168,11 +170,6 @@ func (cmd *command) URL() (gopher.URL, error) {
 	u := cmd.url.URL()
 	if cmd.search != "" {
 		u.Search = cmd.search
-	}
-	if cmd.meta {
-		u = u.AsMetaItem()
-	} else if cmd.allMeta {
-		u = u.AsMetaDir()
 	}
 	if u.ItemType.IsSearch() && u.Search == "" {
 		return u, fmt.Errorf("this item type requires a search term; use --search or <search>, or add a search term to the URL")
@@ -362,8 +359,29 @@ func (cmd *command) selectTextRenderer(rs gopher.Response) (rnd renderer, allowD
 	return rnd, allowDefaultStdout, nil
 }
 
+func (cmd *command) request(u gopher.URL) (rq *gopher.Request, err error) {
+	if cmd.meta {
+		rq = gopher.NewMetaRequest(gopher.MetaItem, u)
+	} else if cmd.allMeta {
+		rq = gopher.NewMetaRequest(gopher.MetaDir, u)
+	} else if cmd.format != "" {
+		rq, err = gopher.NewFormatRequest(u, cmd.format, nil)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		rq = gopher.NewRequest(u, nil)
+	}
+	return rq, nil
+}
+
 func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 	u, err := cmd.URL()
+	if err != nil {
+		return err
+	}
+
+	rq, err := cmd.request(u)
 	if err != nil {
 		return err
 	}
@@ -371,8 +389,6 @@ func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 	client := cmd.Client()
 
 	var gopherErr *gopher.Error
-
-	rq := gopher.NewRequest(u, nil)
 
 	rs, err := client.Fetch(ctx, rq)
 	if errors.As(err, &gopherErr) {
@@ -409,7 +425,10 @@ func (cmd *command) runRaw(ctx cmdy.Context, bin bool) (rerr error) {
 		return err
 	}
 
-	rq := gopher.NewRequest(u, nil)
+	rq, err := cmd.request(u)
+	if err != nil {
+		return err
+	}
 
 	rs, err := client.Raw(ctx, rq)
 	if err != nil {
@@ -475,7 +494,11 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 	grab := func() {
 		var gopherErr *gopher.Error
 		start := time.Now()
-		rq := gopher.NewRequest(u, nil)
+		rq, err := cmd.request(u)
+		if err != nil {
+			panic(err)
+		}
+
 		rs, err := client.Fetch(ctx, rq)
 		if errors.As(err, &gopherErr) {
 			atomic.AddInt64(&failedRequest, 1)
