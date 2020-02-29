@@ -8,12 +8,12 @@ import (
 
 func TestMetaWriterOneInfoOnly(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
+	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep", "sel")
 	MustFlush(mw)
 
-	expected := "+INFO: 0yep\tsel\tlocalhost\t12345\t+\r\n"
+	expected := "+-1\r\n+INFO: 0yep\tsel\tlocalhost\t12345\t+\r\n.\r\n"
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
 	}
@@ -21,7 +21,7 @@ func TestMetaWriterOneInfoOnly(t *testing.T) {
 
 func TestMetaWriterMultipleInfoOnly(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewMetaRequest(MetaDir, mustParseURL("gopher://localhost:12345"))
+	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaDir(), nil)
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep1", "sel1")
 	mw.Info(Dir, "yep2", "sel2")
@@ -29,9 +29,11 @@ func TestMetaWriterMultipleInfoOnly(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
+		"+-1\r\n" +
 		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+INFO: 1yep2\tsel2\tlocalhost\t12345\t+" + "\r\n\r\n" +
-		"+INFO: 9yep3\tsel3\tlocalhost\t12345\t+" + "\r\n"
+		"+INFO: 9yep3\tsel3\tlocalhost\t12345\t+" + "\r\n" +
+		"." + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
@@ -40,7 +42,7 @@ func TestMetaWriterMultipleInfoOnly(t *testing.T) {
 
 func TestMetaWriterOneInfoWithOneRecord(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
+	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep1", "sel1")
 
@@ -53,8 +55,10 @@ func TestMetaWriterOneInfoWithOneRecord(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
+		"+-1\r\n" +
 		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
-		"+QUACK:\r\nhello\r\nworld" + "\r\n"
+		"+QUACK:\r\nhello\r\nworld" + "\r\n" +
+		"." + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
@@ -63,7 +67,7 @@ func TestMetaWriterOneInfoWithOneRecord(t *testing.T) {
 
 func TestMetaWriterOneInfoWithMultipleRecords(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
+	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep1", "sel1")
 
@@ -76,9 +80,11 @@ func TestMetaWriterOneInfoWithMultipleRecords(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
+		"+-1\r\n" +
 		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK1:\r\nyep1" + "\r\n\r\n" +
-		"+QUACK2:\r\nyep2" + "\r\n"
+		"+QUACK2:\r\nyep2" + "\r\n" +
+		"." + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
@@ -87,7 +93,7 @@ func TestMetaWriterOneInfoWithMultipleRecords(t *testing.T) {
 
 func TestMetaWriterMultipleInfoWithMultipleRecords(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewMetaRequest(MetaDir, mustParseURL("gopher://localhost:12345"))
+	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaDir(), nil)
 	mw := newMetaWriter(&buf, rq)
 
 	mw.Info(Text, "yep1", "sel1")
@@ -109,13 +115,15 @@ func TestMetaWriterMultipleInfoWithMultipleRecords(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
+		"+-1\r\n" +
 		"+INFO: 0yep1\tsel1\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK1:\r\nyep1" + "\r\n\r\n" +
 		"+QUACK2:\r\nyep2" + "\r\n\r\n" +
 		"" +
 		"+INFO: 1yep2\tsel2\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK3:\r\nyep3" + "\r\n\r\n" +
-		"+QUACK4:\r\nyep4" + "\r\n"
+		"+QUACK4:\r\nyep4" + "\r\n" +
+		"." + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
@@ -124,7 +132,7 @@ func TestMetaWriterMultipleInfoWithMultipleRecords(t *testing.T) {
 
 func TestMetaWriterValueNormalisesCRLF(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
+	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep", "sel")
 
@@ -138,10 +146,12 @@ func TestMetaWriterValueNormalisesCRLF(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
+		"+-1\r\n" +
 		"+INFO: 0yep\tsel\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK:" + "\r\n" +
 		"line1" + "\r\n" +
-		"line2" + "\r\n"
+		"line2" + "\r\n" +
+		"." + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
@@ -150,7 +160,7 @@ func TestMetaWriterValueNormalisesCRLF(t *testing.T) {
 
 func TestMetaWriterValueCRLFOverWriteBoundary(t *testing.T) {
 	var buf bytes.Buffer
-	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"))
+	var rq = NewRequest(mustParseURL("gopher://localhost:12345").AsMetaItem(), nil)
 	mw := newMetaWriter(&buf, rq)
 	mw.Info(Text, "yep", "sel")
 
@@ -166,10 +176,12 @@ func TestMetaWriterValueCRLFOverWriteBoundary(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
+		"+-1\r\n" +
 		"+INFO: 0yep\tsel\tlocalhost\t12345\t+" + "\r\n\r\n" +
 		"+QUACK:" + "\r\n" +
 		"line1" + "\r\n" +
-		"line2" + "\r\n"
+		"line2" + "\r\n" +
+		"." + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))
@@ -177,7 +189,8 @@ func TestMetaWriterValueCRLFOverWriteBoundary(t *testing.T) {
 }
 
 func TestMetaWriterValueCRLFExcludesRecords(t *testing.T) {
-	var rq = NewMetaRequest(MetaItem, mustParseURL("gopher://localhost:12345"), "FOO", "BAR")
+	var url = mustParseURL("gopher://localhost:12345").AsMetaItem("FOO", "BAR")
+	var rq = NewRequest(url, nil)
 	var buf bytes.Buffer
 
 	mw := newMetaWriter(&buf, rq)
@@ -199,11 +212,13 @@ func TestMetaWriterValueCRLFExcludesRecords(t *testing.T) {
 	MustFlush(mw)
 
 	expected := "" +
+		"+-1\r\n" +
 		"+INFO: 0yep\tsel\tlocalhost\t12345\t+" + "\r\n\r\n" + // INFO should not be excluded
 		"+FOO:" + "\r\n" +
 		"yep" + "\r\n\r\n" +
 		"+BAR:" + "\r\n" +
-		"yep" + "\r\n"
+		"yep" + "\r\n" +
+		"." + "\r\n"
 
 	if buf.String() != expected {
 		t.Fatal(fmt.Sprintf("%q", buf.String()))

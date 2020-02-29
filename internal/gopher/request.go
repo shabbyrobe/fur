@@ -9,11 +9,9 @@ import (
 )
 
 type Request struct {
-	url         URL
-	body        io.ReadCloser
-	metaType    MetaType
-	metaRecords []string
-	format      string
+	url    URL
+	body   io.ReadCloser
+	format string
 
 	// When a server accepts an actual connection, this will be set to the remote address.
 	// This field is ignored by the Gopher client.
@@ -37,10 +35,6 @@ func NewRequest(url URL, body io.Reader) *Request {
 	}
 }
 
-func NewMetaRequest(typ MetaType, url URL, records ...string) *Request {
-	return &Request{metaType: typ, url: url, metaRecords: records}
-}
-
 func NewFormatRequest(url URL, format string, body io.Reader) (*Request, error) {
 	if url.Search != "" {
 		return nil, fmt.Errorf("gopher: format request URL must not contain selector")
@@ -50,13 +44,8 @@ func NewFormatRequest(url URL, format string, body io.Reader) (*Request, error) 
 	return rq, nil
 }
 
-func (r *Request) URL() URL {
-	return r.url
-}
-
-func (r *Request) Body() io.ReadCloser {
-	return r.body
-}
+func (r *Request) URL() URL            { return r.url }
+func (r *Request) Body() io.ReadCloser { return r.body }
 
 // In addition to a selector string, a GopherIIbis-compliant request contains a *format*
 // string, a data flag indicating the presence or absence of a data block, and an OPTIONAL
@@ -71,34 +60,24 @@ func (r *Request) Format() string {
 func (r *Request) buildSelector(buf *bytes.Buffer) error {
 	buf.WriteString(r.url.Selector)
 
-	if r.metaType == MetaNone {
-		if r.url.Search == "" && r.format == "" && r.body == nil {
-			goto done
-		}
+	if r.url.Search == "" && r.format == "" && r.body == nil {
+		goto done
+	}
 
-		buf.WriteByte('\t')
-		buf.WriteString(r.url.Search)
+	buf.WriteByte('\t')
+	buf.WriteString(r.url.Search)
 
-		if r.format == "" && r.body == nil {
-			goto done
-		}
+	if r.format == "" && r.body == nil {
+		goto done
+	}
 
-		buf.WriteByte('\t')
-		buf.WriteString(r.format)
+	buf.WriteByte('\t')
+	buf.WriteString(r.format)
 
-		if r.body != nil {
-			buf.WriteByte('1')
-		} else {
-			buf.WriteByte('0')
-		}
-
+	if r.body != nil {
+		buf.WriteByte('1')
 	} else {
-		buf.WriteByte('\t')
-		buf.WriteByte(byte(r.metaType))
-		if len(r.metaRecords) > 0 {
-			buf.WriteString(metaRecordSelector(r.metaType, r.metaRecords...))
-		}
-		buf.WriteString("\r\n")
+		buf.WriteByte('0')
 	}
 
 done:

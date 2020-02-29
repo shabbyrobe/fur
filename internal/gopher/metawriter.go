@@ -13,9 +13,12 @@ var (
 	ErrMetaLeadingPlus     = errors.New("gopher: metadata value contains leading '+'")
 	ErrMetaInfoAlreadySent = errors.New("gopher: attempted to send INFO more than once for '!' meta request")
 	ErrMetaInfoNotSent     = errors.New("gopher: attempted to send non-info record before INFO")
-	errMetaInfoAfterError  = errors.New("gopher: meta INFO record sent after ERROR")
 
-	tokMetaInfo = []byte("+INFO: ")
+	errMetaAlreadyBegan   = errors.New("gopher: metadata already began")
+	errMetaInfoAfterError = errors.New("gopher: meta INFO record sent after ERROR")
+
+	tokMetaTextBegin = []byte("+-1") // gopher-ii-03, 6
+	tokMetaInfo      = []byte("+INFO: ")
 )
 
 type MetaWriter interface {
@@ -65,6 +68,7 @@ func WriteMeta(mw MetaWriter, i ItemType, disp, sel string, meta []MetaEntry) er
 type metaWriter struct {
 	bufw       *bufio.Writer
 	rq         *Request
+	began      bool
 	infoSet    bool
 	lastRecord *MetaValueWriter
 	flushed    bool
@@ -84,22 +88,7 @@ func newMetaWriter(w io.Writer, rq *Request) *metaWriter {
 	return &metaWriter{bufw: bufw, rq: rq}
 }
 
-func (mw *metaWriter) Flush() error {
-	if mw.flushed {
-		return mw.flushErr
-	}
-	mw.nextRecord(true)
-	mw.flushErr = mw.bufw.Flush()
-	mw.flushed = true
-	return mw.flushErr
-}
-
 func (mw *metaWriter) nextRecord(last bool) {
-	if mw.recordNum == 0 {
-		mw.recordNum++
-		return
-	}
-
 	if !last {
 		mw.bufw.Write(crlf)
 	}
@@ -120,9 +109,38 @@ func (mw *metaWriter) nextRecord(last bool) {
 	mw.recordNum++
 }
 
+func (mw *metaWriter) Flush() error {
+	if mw.flushed {
+		return mw.flushErr
+	}
+	if !mw.began {
+		mw.beginMeta()
+	}
+
+	mw.nextRecord(true)
+	mw.bufw.WriteByte('.')
+	mw.bufw.Write(crlf)
+
+	mw.flushErr = mw.bufw.Flush()
+	mw.flushed = true
+
+	return mw.flushErr
+}
+
+func (mw *metaWriter) beginMeta() {
+	if mw.began {
+		panic(errMetaAlreadyBegan)
+	}
+	mw.began = true
+	mw.bufw.Write(tokMetaTextBegin)
+}
+
 func (mw *metaWriter) Info(i ItemType, disp, sel string) {
 	if mw.infoSet && mw.rq.url.MetaType() == MetaItem {
 		panic(ErrMetaInfoAlreadySent)
+	}
+	if !mw.began {
+		mw.beginMeta()
 	}
 
 	mw.nextRecord(false) // XXX: do not move after 'infoSet = true'
@@ -141,7 +159,7 @@ func (mw *metaWriter) Info(i ItemType, disp, sel string) {
 	bufw.WriteString(mw.rq.url.Port)
 	bufw.WriteByte('\t')
 	bufw.WriteByte('+')
-	mw.bufw.Write(crlf)
+	bufw.Write(crlf)
 
 	// The sooner we flush the info line, the sooner clients can process it:
 	if err := bufw.Flush(); err != nil {
@@ -202,12 +220,6 @@ func (mw *metaWriter) MetaError(code Status, msg string) {
 
 	bufw.WriteString(msg)
 	bufw.Write(crlf)
-
-	bufw.WriteByte('.')
-	bufw.Write(crlf)
-
-	mw.flushed = true
-	mw.flushErr = bufw.Flush()
 }
 
 type MetaValueWriter struct {

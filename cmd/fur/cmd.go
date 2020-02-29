@@ -171,6 +171,11 @@ func (cmd *command) URL() (gopher.URL, error) {
 	if cmd.search != "" {
 		u.Search = cmd.search
 	}
+	if cmd.meta {
+		u = u.AsMetaItem()
+	} else if cmd.allMeta {
+		u = u.AsMetaDir()
+	}
 	if u.ItemType.IsSearch() && u.Search == "" {
 		return u, fmt.Errorf("this item type requires a search term; use --search or <search>, or add a search term to the URL")
 	}
@@ -360,11 +365,10 @@ func (cmd *command) selectTextRenderer(rs gopher.Response) (rnd renderer, allowD
 }
 
 func (cmd *command) request(u gopher.URL) (rq *gopher.Request, err error) {
-	if cmd.meta {
-		rq = gopher.NewMetaRequest(gopher.MetaItem, u)
-	} else if cmd.allMeta {
-		rq = gopher.NewMetaRequest(gopher.MetaDir, u)
-	} else if cmd.format != "" {
+	if cmd.format != "" {
+		if cmd.meta || cmd.allMeta {
+			return nil, fmt.Errorf("gopher: meta and format requests are mutually exclusive")
+		}
 		rq, err = gopher.NewFormatRequest(u, cmd.format, nil)
 		if err != nil {
 			return nil, err
@@ -504,7 +508,6 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 			atomic.AddInt64(&failedRequest, 1)
 
 		} else if err != nil {
-			// fmt.Fprintln(stderr, err)
 			atomic.AddInt64(&failedGeneral, 1)
 
 		} else if rs != nil {
