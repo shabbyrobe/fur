@@ -423,13 +423,12 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 	}
 	client := cmd.Client()
 	stderr := ctx.Stderr()
-	_ = stderr
 
 	var (
 		failedRequest int64
 		failedGeneral int64
 		failedRead    int64
-		totalMsec     int64
+		totalUsec     int64 // fixme: usec might even be too coarse
 	)
 
 	// FIXME: grab should handle stats and report progress
@@ -452,11 +451,11 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 			rs.Close()
 		}
 		took := time.Since(start)
-		atomic.AddInt64(&totalMsec, int64(took/time.Millisecond))
+		atomic.AddInt64(&totalUsec, int64(took/time.Microsecond))
 	}
 
-	fmt.Fprintf(ctx.Stderr(), "spamming %d requests with %d workers\n", cmd.spam, cmd.spamWorkers)
-	fmt.Fprintf(ctx.Stderr(), "%q\n", u)
+	fmt.Fprintf(stderr, "spamming %d requests with %d workers\n", cmd.spam, cmd.spamWorkers)
+	fmt.Fprintf(stderr, "%q\n", u)
 
 	var left = int64(cmd.spam)
 	var workerDone = make(chan struct{}, cmd.spamWorkers)
@@ -479,12 +478,12 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 
 	printStats := func(rqLeft int64) {
 		n := int64(cmd.spam) - rqLeft
-		msec := atomic.LoadInt64(&totalMsec)
-		if msec == 0 {
-			msec = 1
+		usec := atomic.LoadInt64(&totalUsec)
+		if usec == 0 {
+			usec = 1
 		}
-		avg := float64(msec) / float64(n)
-		tps := float64(n) / float64(msec) * 1000 * float64(cmd.spamWorkers)
+		avg := float64(usec) / float64(n) / 1000
+		tps := float64(n) / (float64(usec) / float64(cmd.spamWorkers) / 1000000)
 		fmt.Printf("%d avgms:%.2f tps:%.0f\n", n, avg, tps)
 	}
 
