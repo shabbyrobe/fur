@@ -32,3 +32,11 @@
   or not? Presume yes because it says it's mandatory earlier, but that makes
   +INFO in the selector redundant
 
+- Caps file should have a cap that reports what the default "fake host" name
+  is, i.e. "null.host" or "error.host" or "fake", etc.
+
+- Caps file should report TLS port, if an alternative exists.
+
+- Can we do anything about virtual hosting? IPv4 exhaustion wasn't a big deal
+  back in the day, but it is now, and there are still barriers to IPv6 uptake
+  (client privacy concerns being but one)
