@@ -18,7 +18,11 @@ type URL struct {
 	Hostname string
 	Port     string
 	Root     bool
+
+	// For server requests, this will always be Text ('0') as there is no
+	// way to tell the ItemType from what the client sends:
 	ItemType ItemType
+
 	Selector string
 	Search   string
 }
@@ -112,14 +116,18 @@ func (u URL) String() string {
 		out.WriteString(u.Hostname)
 	}
 
-	if u.Port != "70" {
+	if u.Port != "" && u.Port != "70" {
 		out.WriteByte(':')
 		out.WriteString(u.Port)
 	}
 
 	if !u.Root {
 		out.WriteByte('/')
-		out.WriteString(string(rune(u.ItemType)))
+		if u.ItemType == NoItemType {
+			out.WriteByte(byte(Text)) // XXX: 'text' seems the most common fallback item type
+		} else {
+			out.WriteByte(byte(u.ItemType))
+		}
 		out.WriteString(escape(u.Selector))
 
 		if u.Search != "" {

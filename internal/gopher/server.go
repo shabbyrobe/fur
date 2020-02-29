@@ -19,8 +19,10 @@ const (
 )
 
 var (
-	ErrBadRequest   = errors.New("gopher: bad request")
-	ErrServerClosed = errors.New("gopher: server closed")
+	ErrBadRequest             = errors.New("gopher: bad request")
+	ErrServerClosed           = errors.New("gopher: server closed")
+	ErrRequestFileFlagInvalid = errors.New("gopher: client sent an invalid file flag (gIIs6)")
+	ErrRequestTrailingData    = errors.New("gopher: request contained invalid trailing data")
 )
 
 func ListenAndServe(addr string, host string, handler Handler, meta MetaHandler) error {
@@ -281,6 +283,9 @@ retryTLS:
 		if err != nil && (err != io.EOF || n == 0) {
 			return nil, err
 		}
+
+		// Only attempt TLS upgrade if this is the first read and haven't already
+		// successfully upgraded:
 		if sz == 0 && !c.isTLS && n > 0 {
 			if err := c.upgradeTLS(ctx, c.buf[:n]); err != nil {
 				return nil, err
@@ -291,53 +296,29 @@ retryTLS:
 		}
 		sz += n
 
+		// Scan for the newline from the end of the last read:
 		for i := at; i < sz; i++ {
 			if c.buf[i] == '\n' {
 				nl = i
 				goto found
 			}
 		}
+		at = sz
 	}
 
 found:
 	line, left := c.buf[:nl], c.buf[nl+1:]
 	line = dropCR(line)
-	sz = len(line)
 
-	var selector, view string
-	var hasData bool
-	var field, s int
+	var url = URL{Hostname: c.host, Port: c.port}
 
-	for i := at; i < sz; i++ {
-		if i == sz || line[i] == '\t' {
-			switch field {
-			case 0:
-				selector = string(c.buf[s:i])
-				field, s = field+1, i+1
-
-			case 1:
-				view = string(c.buf[s:i])
-				field, s = field+1, i+1
-
-			case 2:
-				ok := i-s == 1 && (c.buf[s] == '0' || c.buf[s] == '1')
-				if !ok {
-					// FIXME: respond with error?
-					return nil, ErrBadRequest
-				}
-				hasData = c.buf[s] == '1'
-				field, s = field+1, i+1
-
-			case 3:
-				// XXX: Gopher clients could send us any old garbage. Let's just
-				// ignore it for now.
-				return nil, ErrBadRequest
-			}
-		}
+	fileFlag, err := populateRequestURL(&url, line)
+	if err != nil {
+		return nil, err
 	}
 
 	var body io.ReadCloser = c.rwc
-	if len(left) > 0 || hasData {
+	if len(left) > 0 || fileFlag {
 		c.rwc.SetReadDeadline(time.Now().Add(c.srv.readTimeout()))
 
 		multi := io.MultiReader(bytes.NewReader(left), c.rwc)
@@ -347,19 +328,48 @@ found:
 		}
 	}
 
-	url := URL{
-		Hostname: c.host,
-		Port:     c.port,
-		Root:     true,
-		ItemType: 0,
-		Selector: selector,
-		Search:   view,
-	}
-
 	rq := NewRequest(url, body)
 	rq.RemoteAddr = c.rwc.RemoteAddr().(*net.TCPAddr)
 
 	return rq, nil
+}
+
+func populateRequestURL(url *URL, line []byte) (fileFlag bool, err error) {
+	var field, s int
+	var sz = len(line)
+
+	url.ItemType = Text
+
+	for i := 0; i <= sz; i++ {
+		if i == sz || line[i] == '\t' {
+			switch field {
+			case 0:
+				url.Selector = string(line[s:i])
+				url.Root = url.Selector == ""
+				field, s = field+1, i+1
+
+			case 1:
+				url.Search = string(line[s:i])
+				field, s = field+1, i+1
+
+			case 2:
+				ok := i-s == 1 && (line[s] == '0' || line[s] == '1')
+				if !ok {
+					// XXX: perhaps invalid file flags should just be ignored?
+					return false, ErrRequestFileFlagInvalid
+				}
+				fileFlag = line[s] == '1'
+				field, s = field+1, i+1
+
+			case 3:
+				// XXX: Gopher clients could send us any old garbage. Should we ignore
+				// and carry on?
+				return fileFlag, ErrRequestTrailingData
+			}
+		}
+	}
+
+	return fileFlag, nil
 }
 
 func resolveHostPort(host string) (rhost string, rport string, err error) {

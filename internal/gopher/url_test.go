@@ -18,3 +18,10 @@ func TestURLIPv6(t *testing.T) {
 		t.Fatal(u.String())
 	}
 }
+
+func TestURLStringWithEmptyPort(t *testing.T) {
+	u := URL{Hostname: "invalid", Selector: "foo"}
+	if u.String() != "gopher://invalid/0foo" {
+		t.Fatal(u.String())
+	}
+}

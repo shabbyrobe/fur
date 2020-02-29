@@ -40,3 +40,12 @@
 - Can we do anything about virtual hosting? IPv4 exhaustion wasn't a big deal
   back in the day, but it is now, and there are still barriers to IPv6 uptake
   (client privacy concerns being but one)
+
+- The GopherII spec is clear about whether '+' requests should begin with a
+  size line, but unclear about whether GopherIIbis metadata responses should
+  begin with a size line.
+
+  Geomidaye has some strong opinions about Gopher+ metadata, but returns a
+  broken response, which will make things interesting:
+  http://r-36.net/scm/geomyidae/file/main.c.html#l160
+
