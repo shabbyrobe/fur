@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/url"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -15,8 +14,9 @@ import (
 // http://tools.ietf.org/html/rfc4266
 // https://www.w3.org/Addressing/URL/4_1_Gopher+.html
 type URL struct {
+	Secure   bool
 	Hostname string
-	Port     int
+	Port     string
 	Root     bool
 	ItemType ItemType
 	Selector string
@@ -87,11 +87,11 @@ func (u URL) CanFetch() bool {
 }
 
 func (u URL) Host() string {
-	p := int64(u.Port)
-	if p == 0 {
-		p = 70
+	p := u.Port
+	if p == "" {
+		p = "70"
 	}
-	return net.JoinHostPort(u.Hostname, strconv.FormatInt(p, 10))
+	return net.JoinHostPort(u.Hostname, p)
 }
 
 func (u URL) URL() URL { return u }
@@ -108,9 +108,9 @@ func (u URL) String() string {
 		out.WriteString(u.Hostname)
 	}
 
-	if u.Port != 70 {
+	if u.Port != "70" {
 		out.WriteByte(':')
-		out.WriteString(strconv.FormatInt(int64(u.Port), 10))
+		out.WriteString(u.Port)
 	}
 
 	if !u.Root {
@@ -202,24 +202,18 @@ func ParseURL(s string) (gu URL, err error) {
 
 	h := u.Host
 	if !portEnd.MatchString(h) {
-		// SplitHostPort fails if there is no port with an error we can't catch:
+		// SplitHostPort fails if there is no port with an error we can't catch.
+		// XXX: This also presumes we are using the "Lohmann Model" for TLS, rather
+		// than a distinct port. Probably worth asking on the mailing list.
 		h += ":70"
 	}
 
-	var port string
-	gu.Hostname, port, err = net.SplitHostPort(h)
+	gu.Hostname, gu.Port, err = net.SplitHostPort(h)
 	if err != nil {
 		return URL{}, err
 	}
-
-	if port == "" {
-		gu.Port = 70
-	} else {
-		portn, err := strconv.ParseInt(port, 0, 0)
-		if err != nil {
-			return URL{}, err
-		}
-		gu.Port = int(portn)
+	if gu.Port == "" {
+		gu.Port = "70"
 	}
 
 	p := u.Path

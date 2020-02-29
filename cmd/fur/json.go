@@ -20,7 +20,7 @@ type jsonEntry struct {
 	Raw      string `json:"raw,omitempty"`
 	Plus     bool   `json:"plus"`
 	Hostname string `json:"hostname"`
-	Port     int    `json:"port"`
+	Port     string `json:"port"`
 }
 
 var _ renderer = &jsonDirRenderer{}

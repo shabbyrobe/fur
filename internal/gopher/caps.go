@@ -17,7 +17,7 @@ type Caps interface {
 }
 
 type CapsSource interface {
-	LoadCaps(host string, port int) (Caps, error)
+	LoadCaps(ctx context.Context, host, port string) (Caps, error)
 }
 
 var DefaultCaps Caps = defaultCaps{}

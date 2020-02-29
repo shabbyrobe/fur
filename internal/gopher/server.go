@@ -80,8 +80,7 @@ func (srv *Server) metaHandler() MetaHandler {
 func (srv *Server) Serve(l net.Listener, host string) error {
 	srv.addListener(l)
 
-	var lhost string
-	var lport int
+	var lhost, lport string
 	var err error
 	if host != "" {
 		lhost, lport, err = resolveHostPort(host)
@@ -203,7 +202,7 @@ type serveConn struct {
 	buf []byte
 
 	host string
-	port int
+	port string
 	log  Logger
 	meta MetaHandler
 }
@@ -321,22 +320,16 @@ found:
 	return rq, nil
 }
 
-func resolveHostPort(host string) (rhost string, rport int, err error) {
-	var rportStr string
-	rhost, rportStr, err = net.SplitHostPort(host)
+func resolveHostPort(host string) (rhost string, rport string, err error) {
+	rhost, rport, err = net.SplitHostPort(host)
 	if err != nil {
 		// SplitHostPort has uncatchable errors, so let's just be brutes about it:
 		var retryErr error
-		rhost, rportStr, retryErr = net.SplitHostPort(host + ":gopher")
+		rhost, rport, retryErr = net.SplitHostPort(host + ":70")
 		if retryErr != nil {
 			return rhost, rport, err // return orig error
 		}
 	}
 
-	rport, err = net.LookupPort("tcp", rportStr)
-	if err != nil {
-		return rhost, rport, err
-	}
-
-	return rhost, rport, err
+	return rhost, rport, nil
 }

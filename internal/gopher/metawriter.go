@@ -125,7 +125,8 @@ func (mw *metaWriter) Info(i ItemType, disp, sel string) {
 	bufw.WriteByte('\t')
 	bufw.WriteString(mw.rq.url.Hostname)
 	bufw.WriteByte('\t')
-	bufw.WriteString(strconv.FormatInt(int64(mw.rq.url.Port), 10))
+	bufw.WriteString(mw.rq.url.Port)
+	bufw.WriteByte('\t')
 	bufw.WriteByte('+')
 	mw.bufw.Write(crlf)
 

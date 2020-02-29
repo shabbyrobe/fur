@@ -26,7 +26,7 @@ func (d *Dirent) write(w *bufio.Writer) error {
 	w.WriteByte('\t')
 	w.WriteString(d.URL.Hostname)
 	w.WriteByte('\t')
-	w.WriteString(strconv.FormatInt(int64(d.URL.Port), 10))
+	w.WriteString(d.URL.Port)
 	if d.Plus {
 		w.WriteByte('\t')
 		w.WriteByte('+')
@@ -74,11 +74,10 @@ func parseDirent(txt string, line int, dir *Dirent) error {
 				// valid.
 				ps := strings.TrimSpace(txt[start:i])
 				if ps != "" {
-					pi, err := strconv.ParseInt(ps, 10, 0)
-					if err != nil {
+					if _, err := strconv.ParseInt(ps, 10, 16); err != nil {
 						return fmt.Errorf("gopher: unexpected port %q at line %d: %w", ps, line, err)
 					}
-					dir.URL.Port = int(pi)
+					dir.URL.Port = ps
 				}
 				field, start = field+1, i+1
 

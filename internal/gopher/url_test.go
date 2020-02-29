@@ -11,7 +11,7 @@ func TestURLIPv6(t *testing.T) {
 	if u.Hostname != "::" {
 		t.Fatal(err)
 	}
-	if u.Port != 70 {
+	if u.Port != "70" {
 		t.Fatal(err)
 	}
 	if u.String() != "gopher://[::]/1/yep" {

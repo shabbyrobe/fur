@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net"
 	"strconv"
 )
 
@@ -77,10 +78,14 @@ type DirWriter struct {
 
 func NewDirWriter(w io.Writer, rq *Request) *DirWriter {
 	u := rq.URL()
+	port, err := net.LookupPort("tcp", u.Port)
+	if err != nil {
+		panic(err)
+	}
 	return &DirWriter{
 		bufw: bufio.NewWriter(w),
 		host: u.Hostname,
-		port: strconv.FormatInt(int64(u.Port), 10),
+		port: strconv.FormatInt(int64(port), 10),
 	}
 }
 
