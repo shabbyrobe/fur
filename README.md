@@ -83,12 +83,12 @@ HTML item types (`h`) work best if you have `w3m` installed.
 - https://github.com/knusbaum/cl-gopher
 - http://motsognir.sourceforge.net/
 - https://github.com/spc476/port70
-- https://github.com/jgoerzen/pygopherd
+- https://github.com/jgoerzen/pygopherd (GPLv2)
 - https://github.com/asterIRC/uGopherServer
 - https://github.com/michael-lazar/flask-gopher
 - http://gofish.sourceforge.net/
 - https://github.com/ix/geomyidae
-- http://r-36.net/scm/geomyidae/file/CGI.html (Basic Gopher+ meta)
+- http://r-36.net/scm/geomyidae/file/CGI.html ([MIT/X](http://r-36.net/scm/geomyidae/file/LICENSE.html), Basic Gopher+ meta)
 - http://aftershock.sourceforge.net/ (Ancient, Java)
 - http://mateusz.viste.fr/attic/grumpy/ (GPL, last updated 2011)
 
@@ -130,9 +130,10 @@ STARTTLS.
 - https://thelambdalab.xyz/elpher/
 - https://rawtext.club/~sloum/bombadillo.html (https://tildegit.org/sloum/bombadillo)
 - https://github.com/jankammerath/gophie
-- https://github.com/solderpunk/VF-1 (TLS)
+- https://github.com/solderpunk/VF-1 (BSD-2, TLS)
 - https://metacpan.org/pod/release/WGDAVIS/Net-Gopher-0.43/lib/Net/Gopher.pm (Gopher+)
 - https://www.macintoshrepository.org/265-turbogopher-2-0-3
+- https://github.com/xvxx/phetch (MIT, TLS)
 
 
 ### Gemini:
