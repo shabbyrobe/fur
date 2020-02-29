@@ -68,6 +68,7 @@ HTML item types (`h`) work best if you have `w3m` installed.
 - http://muffinlabs.com/2013/06/12/goper2000---a-modern-gopher-server/
 - https://news.ycombinator.com/item?id=12269784
 - https://www.ics.uci.edu/~rohit/IEEE-L7-http-gopher.html
+- http://www.bio.net/bionet/mm/bio-soft/1992-October/003180.html
 
 
 ### Gopher articles of interest:
@@ -131,6 +132,7 @@ STARTTLS.
 - https://github.com/jankammerath/gophie
 - https://github.com/solderpunk/VF-1 (TLS)
 - https://metacpan.org/pod/release/WGDAVIS/Net-Gopher-0.43/lib/Net/Gopher.pm (Gopher+)
+- https://www.macintoshrepository.org/265-turbogopher-2-0-3
 
 
 ### Gemini:

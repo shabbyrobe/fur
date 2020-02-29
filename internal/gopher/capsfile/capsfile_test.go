@@ -1,4 +1,4 @@
-package gopher
+package capsfile
 
 import (
 	"errors"

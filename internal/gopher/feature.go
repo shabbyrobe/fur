@@ -13,13 +13,6 @@ const (
 	FeatureIIbis Feature = 3
 )
 
-const (
-	capKeyGopherIIbis   = "SupportsGopherIIbis"
-	capKeyGopherII      = "SupportsGopherII"
-	capKeyGopherPlusAsk = "SupportsGopherPlusAsk"
-	capKeyTLSPort       = "ServerTLSPort"
-)
-
 type FeatureStatus int
 
 const (
@@ -27,10 +20,3 @@ const (
 	FeatureSupported
 	FeatureUnsupported
 )
-
-func featureStatusFromBool(v bool) FeatureStatus {
-	if v {
-		return FeatureSupported
-	}
-	return FeatureUnsupported
-}

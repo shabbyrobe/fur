@@ -1,4 +1,4 @@
-package gopher
+package capsfile
 
 import (
 	"bytes"
@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/shabbyrobe/fur/internal/gopher"
 )
 
 var (
@@ -24,7 +26,7 @@ type CapsFile struct {
 	expiresAfter time.Duration
 }
 
-var _ Caps = &CapsFile{}
+var _ gopher.Caps = &CapsFile{}
 
 func NewCapsFile(name string) *CapsFile {
 	return &CapsFile{
@@ -43,19 +45,19 @@ func (cf *CapsFile) TLSPort() int {
 	return int(v)
 }
 
-func (cf *CapsFile) Supports(feature Feature) FeatureStatus {
+func (cf *CapsFile) Supports(feature gopher.Feature) gopher.FeatureStatus {
 	switch feature {
-	case FeatureIIbis:
+	case gopher.FeatureIIbis:
 		v, _, _ := cf.Bool(capKeyGopherIIbis)
 		return featureStatusFromBool(v)
-	case FeatureII:
+	case gopher.FeatureII:
 		v, _, _ := cf.Bool(capKeyGopherII)
 		return featureStatusFromBool(v)
-	case FeaturePlusAsk:
+	case gopher.FeaturePlusAsk:
 		v, _, _ := cf.Bool(capKeyGopherPlusAsk)
 		return featureStatusFromBool(v)
 	}
-	return FeatureStatusUnknown
+	return gopher.FeatureStatusUnknown
 }
 
 func (cf *CapsFile) String(key string) (s string, ok bool) {
@@ -90,8 +92,8 @@ func (cf *CapsFile) Software() (name, version string) {
 	return name, version
 }
 
-func (cf *CapsFile) ServerInfo() (*ServerInfo, error) {
-	var si ServerInfo
+func (cf *CapsFile) ServerInfo() (*gopher.ServerInfo, error) {
+	var si gopher.ServerInfo
 
 	si.Software, _ = cf.String("ServerSoftware")
 	si.Version, _ = cf.String("ServerVersion")
@@ -108,8 +110,8 @@ func (cf *CapsFile) DefaultEncoding() string {
 	return enc
 }
 
-func (cf *CapsFile) PathConfig() (*PathConfig, error) {
-	pc := UnixPathConfig
+func (cf *CapsFile) PathConfig() (*gopher.PathConfig, error) {
+	pc := gopher.UnixPathConfig
 
 	var errs []string
 
@@ -354,4 +356,11 @@ func readAtMost(r io.Reader, limit int64) (bts []byte, err error) {
 		return bts, fmt.Errorf("gopher: caps too large")
 	}
 	return bts, nil
+}
+
+func featureStatusFromBool(v bool) gopher.FeatureStatus {
+	if v {
+		return gopher.FeatureSupported
+	}
+	return gopher.FeatureUnsupported
 }

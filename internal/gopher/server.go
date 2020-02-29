@@ -352,6 +352,14 @@ found:
 	return rq, nil
 }
 
+func dropCR(data []byte) []byte {
+	sz := len(data)
+	if len(data) > 0 && data[sz-1] == '\r' {
+		return data[0 : sz-1]
+	}
+	return data
+}
+
 func populateRequestURL(url *URL, line []byte) (fileFlag bool, err error) {
 	var field, s int
 	var sz = len(line)
