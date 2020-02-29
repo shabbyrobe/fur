@@ -12,13 +12,12 @@ import (
 const DefaultTimeout = 10 * time.Second
 
 type Client struct {
-	Timeout          time.Duration
-	ExtraBinaryTypes [256]bool
+	Timeout               time.Duration
+	ExtraBinaryTypes      [256]bool
+	DisableErrorIntercept bool // Warning: subject to change.
 
-	// Disables error interception. Warning: subject to change.
-	DisableErrorIntercept bool
-
-	Recorder Recorder
+	Recorder        Recorder
+	CapsSource      CapsSource
 }
 
 func (c *Client) timeoutDial() time.Duration {
@@ -54,6 +53,12 @@ func (c *Client) dial(ctx context.Context, rq *Request) (*net.TCPConn, error) {
 // the response.
 func (c *Client) send(ctx context.Context, conn conn, rq *Request, at time.Time, interceptErrors bool) (conn, error) {
 	var rec Recording
+
+	caps, err := c.loadCaps(ctx, rq.url.Hostname, rq.url.Port)
+	if err != nil {
+		return conn, err
+	}
+	_ = caps // XXX: not using yet.
 
 	if c.Recorder != nil {
 		rec = c.Recorder.BeginRecording(rq, at)
@@ -124,7 +129,20 @@ func (c *Client) send(ctx context.Context, conn conn, rq *Request, at time.Time,
 	return conn, nil
 }
 
-func (c *Client) dialAndSend(ctx context.Context, rq *Request, at time.Time, interceptErrors bool) (conn, error) {
+func (c *Client) loadCaps(ctx context.Context, host string, port string) (caps Caps, err error) {
+	if c.CapsSource != nil {
+		caps, err = c.CapsSource.LoadCaps(ctx, host, port)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if caps == nil {
+		caps = DefaultCaps
+	}
+	return caps, nil
+}
+
+func (c *Client) dialAndSend(ctx context.Context, rq *Request, at time.Time, interceptErrors bool) (net.Conn, error) {
 	conn, err := c.dial(ctx, rq)
 	if err != nil {
 		return nil, err

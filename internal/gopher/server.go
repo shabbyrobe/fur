@@ -31,6 +31,7 @@ type Server struct {
 	Handler     Handler
 	MetaHandler MetaHandler
 	ErrorLog    Logger
+	Info        *ServerInfo
 
 	RequestSizeLimit    int
 	ReadTimeout         time.Duration
@@ -139,6 +140,14 @@ func (srv *Server) Serve(l net.Listener, host string) error {
 	}
 
 	return nil
+}
+
+func (srv *Server) info() *ServerInfo {
+	if srv.Info != nil {
+		return srv.Info
+	}
+	var d = defaultServerInfo
+	return &d
 }
 
 func (srv *Server) addListener(l net.Listener) {

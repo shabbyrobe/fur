@@ -38,19 +38,19 @@ func (cf *CapsFile) Version() int { return cf.version }
 
 func (cf *CapsFile) ExpiresAfter() time.Duration { return cf.expiresAfter }
 
-func (cf *CapsFile) Supports(feature Feature) bool {
+func (cf *CapsFile) Supports(feature Feature) FeatureStatus {
 	switch feature {
 	case FeatureIIbis:
-		v, _, _ := cf.Bool("SupportsGopherIIbis")
-		return v
+		v, _, _ := cf.Bool(capKeyGopherIIbis)
+		return featureStatusFromBool(v)
 	case FeatureII:
-		v, _, _ := cf.Bool("SupportsGopherII")
-		return v
-	case FeaturePlus:
-		v, _, _ := cf.Bool("SupportsGopherPlus")
-		return v
+		v, _, _ := cf.Bool(capKeyGopherII)
+		return featureStatusFromBool(v)
+	case FeaturePlusAsk:
+		v, _, _ := cf.Bool(capKeyGopherPlusAsk)
+		return featureStatusFromBool(v)
 	}
-	return false
+	return FeatureStatusUnknown
 }
 
 func (cf *CapsFile) String(key string) (s string, ok bool) {
