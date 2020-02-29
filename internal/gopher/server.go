@@ -20,10 +20,12 @@ const (
 )
 
 var (
-	ErrBadRequest             = errors.New("gopher: bad request")
-	ErrServerClosed           = errors.New("gopher: server closed")
-	ErrRequestFileFlagInvalid = errors.New("gopher: client sent an invalid file flag (gIIs6)")
-	ErrRequestTrailingData    = errors.New("gopher: request contained invalid trailing data")
+	ErrBadRequest   = errors.New("gopher: bad request")
+	ErrServerClosed = errors.New("gopher: server closed")
+
+	errRequestFileFlagInvalid = errors.New("client sent an invalid file flag") // gIIs6
+	errRequestTrailingData    = errors.New("request contained invalid trailing data")
+	errRequestTooLarge        = errors.New("request selector string size exceeded limit")
 )
 
 var (
@@ -41,7 +43,12 @@ type Server struct {
 	ErrorLog    Logger
 	Info        *ServerInfo
 
-	RequestSizeLimit    int
+	// If false, the server will not intercept request for caps.txt
+	DisableCaps bool
+
+	// Maximum number of bytes
+	RequestSizeLimit int
+
 	ReadTimeout         time.Duration
 	ReadSelectorTimeout time.Duration
 	TLSConfig           *tls.Config
@@ -240,8 +247,8 @@ func (c *serveConn) serve(ctx context.Context) {
 
 	req, err := c.readRequest(ctx)
 	if err != nil {
-		// FIXME: log
-		c.rwc.Close()
+		remoteAddr := c.rwc.RemoteAddr().String()
+		c.log.Printf("gopher: request read from %s failed: %v\n", remoteAddr, err)
 		return
 	}
 
@@ -291,12 +298,21 @@ func (c *serveConn) upgradeTLS(ctx context.Context, buf []byte) (err error) {
 	return nil
 }
 
+func (c *serveConn) respondError(url URL, status Status, err error) error {
+	// FIXME: not handling incoming gopherIIbis properly yet, so we can only
+	// respond with dirent-style:
+	// FIXME: tab-escape strings?
+	fmt.Fprintf(c.rwc, "3Error: %d, %s\t\tinvalid\t0\r\n", status, err)
+	return err
+}
+
 func (c *serveConn) readRequest(ctx context.Context) (req *Request, err error) {
 retryTLS:
 	c.rwc.SetReadDeadline(time.Now().Add(c.srv.readSelectorTimeout()))
 
+	var max = len(c.buf)
 	var nl, at, sz int
-	for {
+	for sz < max {
 		n, err := c.rwc.Read(c.buf[sz:])
 		if err != nil && (err != io.EOF || n == 0) {
 			return nil, err
@@ -324,6 +340,11 @@ retryTLS:
 		at = sz
 	}
 
+	if sz == max {
+		// XXX: We can't know if it's a GopherIIbis request this early:
+		return nil, c.respondError(URL{}, StatusGeneralError, errRequestTooLarge)
+	}
+
 found:
 	line, left := c.buf[:nl], c.buf[nl+1:]
 	line = dropCR(line)
@@ -332,7 +353,7 @@ found:
 
 	fileFlag, err := populateRequestURL(&url, line)
 	if err != nil {
-		return nil, err
+		return nil, c.respondError(url, StatusBadRequest, err)
 	}
 
 	var body io.ReadCloser = c.rwc
@@ -382,7 +403,7 @@ func populateRequestURL(url *URL, line []byte) (fileFlag bool, err error) {
 				ok := i-s == 1 && (line[s] == '0' || line[s] == '1')
 				if !ok {
 					// XXX: perhaps invalid file flags should just be ignored?
-					return false, ErrRequestFileFlagInvalid
+					return false, errRequestFileFlagInvalid
 				}
 				fileFlag = line[s] == '1'
 				field, s = field+1, i+1
@@ -390,7 +411,7 @@ func populateRequestURL(url *URL, line []byte) (fileFlag bool, err error) {
 			case 3:
 				// XXX: Gopher clients could send us any old garbage. Should we ignore
 				// and carry on?
-				return fileFlag, ErrRequestTrailingData
+				return fileFlag, errRequestTrailingData
 			}
 		}
 	}
