@@ -8,13 +8,22 @@ import (
 	"github.com/shabbyrobe/fur/internal/uuencode"
 )
 
+type ResponseClass int
+
+const (
+	UnknownClass ResponseClass = iota
+	BinaryClass
+	DirClass
+	TextClass
+)
+
 var lineEnding = []byte{'\r', '\n'}
 
 type Response interface {
 	Reader() io.ReadCloser
 	Status() Status
 	Request() *Request
-	Class() Class
+	Class() ResponseClass
 	Close() error
 }
 
@@ -30,7 +39,7 @@ func NewBinaryResponse(rq *Request, rdr io.ReadCloser) *BinaryResponse {
 }
 
 func (br *BinaryResponse) Request() *Request     { return br.rq }
-func (br *BinaryResponse) Class() Class          { return BinaryClass }
+func (br *BinaryResponse) Class() ResponseClass  { return BinaryClass }
 func (br *BinaryResponse) Status() Status        { return OK }
 func (br *BinaryResponse) Reader() io.ReadCloser { return br }
 func (br *BinaryResponse) Close() error          { return br.inner.Close() }
@@ -56,7 +65,7 @@ func (br *UUEncodedResponse) File() (string, bool)      { return br.uu.File() }
 func (br *UUEncodedResponse) Mode() (os.FileMode, bool) { return br.uu.Mode() }
 
 func (br *UUEncodedResponse) Request() *Request     { return br.rq }
-func (br *UUEncodedResponse) Class() Class          { return BinaryClass }
+func (br *UUEncodedResponse) Class() ResponseClass  { return BinaryClass }
 func (br *UUEncodedResponse) Reader() io.ReadCloser { return br }
 func (br *UUEncodedResponse) Close() error          { return br.cls.Close() }
 func (br *UUEncodedResponse) Status() Status        { return OK }
@@ -77,7 +86,7 @@ func NewTextResponse(rq *Request, rdr io.ReadCloser) *TextResponse {
 	return &TextResponse{rq: rq, rdr: NewTextReader(rdr), cls: rdr}
 }
 
-func (br *TextResponse) Class() Class          { return TextClass }
+func (br *TextResponse) Class() ResponseClass  { return TextClass }
 func (br *TextResponse) Request() *Request     { return br.rq }
 func (br *TextResponse) Status() Status        { return OK }
 func (br *TextResponse) Reader() io.ReadCloser { return br }
@@ -111,9 +120,9 @@ func NewDirResponse(rq *Request, rdr io.ReadCloser) *DirResponse {
 	}
 }
 
-func (br *DirResponse) Status() Status    { return OK }
-func (br *DirResponse) Class() Class      { return DirClass }
-func (br *DirResponse) Request() *Request { return br.rq }
+func (br *DirResponse) Status() Status       { return OK }
+func (br *DirResponse) Class() ResponseClass { return DirClass }
+func (br *DirResponse) Request() *Request    { return br.rq }
 
 func (br *DirResponse) Reader() io.ReadCloser {
 	return &readCloser{

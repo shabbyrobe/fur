@@ -43,18 +43,6 @@ const (
 	MetaError = '-'
 )
 
-type Class int
-
-const (
-	UnknownClass Class = iota
-	BinaryClass
-	ExternalClass
-	DirClass
-	TextClass
-	ErrorClass
-	InfoClass
-)
-
 var itemTypeStrings [256]string
 
 func init() {
@@ -76,38 +64,18 @@ func (i ItemType) IsSearch() bool {
 	return i == Search
 }
 
-func (i ItemType) Class() Class {
-	// XXX: HTML from floodgap.com seems to come back as Binary rather than dotproto:
-	// gopher://gopher.floodgap.com/hURL:http://gopher.floodgap.com/overbite/
-	return defaultClass[i]
-}
-
 func (i ItemType) IsBinary() bool {
-	return i.Class() == BinaryClass
+	return isBinary[i]
 }
 
-var defaultClass = [256]Class{
-	Text:          TextClass,
-	Dir:           DirClass,
-	CSOServer:     ExternalClass,
-	ItemError:     ErrorClass,
-	BinHex:        TextClass,
-	BinaryArchive: BinaryClass,
-	UUEncoded:     TextClass,
-	Search:        DirClass,
-	Telnet:        ExternalClass,
-	Binary:        BinaryClass,
-	Duplicate:     UnknownClass,
-	GIF:           BinaryClass,
-	Image:         BinaryClass,
-	TN3270:        ExternalClass,
-	Calendar:      BinaryClass,
-	Doc:           BinaryClass,
-	HTML:          TextClass,
-	Info:          InfoClass,
-	Page:          TextClass,
-	MBOX:          BinaryClass,
-	Sound:         BinaryClass,
-	XML:           TextClass,
-	Video:         BinaryClass,
+var isBinary = [256]bool{
+	BinaryArchive: true,
+	Binary:        true,
+	GIF:           true,
+	Image:         true,
+	Calendar:      true,
+	Doc:           true,
+	MBOX:          true,
+	Sound:         true,
+	Video:         true,
 }
