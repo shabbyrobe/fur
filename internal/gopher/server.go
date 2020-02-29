@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"runtime"
@@ -23,6 +24,10 @@ var (
 	ErrServerClosed           = errors.New("gopher: server closed")
 	ErrRequestFileFlagInvalid = errors.New("gopher: client sent an invalid file flag (gIIs6)")
 	ErrRequestTrailingData    = errors.New("gopher: request contained invalid trailing data")
+)
+
+var (
+	upgradeTLSErrorResponse = []byte("3Error\t\tinvalid\t0\r\n")
 )
 
 func ListenAndServe(addr string, host string, handler Handler, meta MetaHandler) error {
@@ -261,9 +266,22 @@ func (c *serveConn) upgradeTLS(ctx context.Context, buf []byte) (err error) {
 	// So ASCII 0x16 (SYN) is reserved and is now forbidden as the first character of a
 	// selector; if 0x16 is sent, the server presumes it commences a TLS handshake.
 	//
-	if c.srv.TLSConfig == nil || c.buf[0] != 0x16 || c.isTLS {
+	if c.buf[0] != 0x16 || c.isTLS {
 		return nil
 	}
+	if c.srv.TLSConfig == nil {
+		// XXX: Non-TLS gopher will typically respond to a request for 0x16 with an
+		// directory with a '3' type or a bodgy text error message, which will cause
+		// the client to cop a tls.RecordHeaderError, so we should do the same as
+		// that's the error we want to catch in the client.
+		//
+		// We want to have a pluggable error renderer in here too, but we don't want
+		// this particular write to be overridden; it's a question for later.
+		c.rwc.Write(upgradeTLSErrorResponse)
+
+		return fmt.Errorf("gopher: tls not configured")
+	}
+
 	bufConn := &bufferedConn{
 		Conn: c.rwc,
 		rdr:  io.MultiReader(bytes.NewReader(buf), c.rwc),

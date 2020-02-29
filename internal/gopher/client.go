@@ -53,6 +53,7 @@ func (c *Client) dial(ctx context.Context, rq *Request, tlsMode TLSMode) (net.Co
 		} else {
 			tlsConf = c.TLSClientConfig.Clone()
 		}
+
 		tlsConf.ServerName = rq.url.Hostname
 		conn = tls.Client(conn, tlsConf)
 	}
@@ -86,12 +87,18 @@ func (c *Client) send(ctx context.Context, conn net.Conn, rq *Request, at time.T
 
 	var buf bytes.Buffer
 	if err := rq.buildSelector(&buf); err != nil {
-		return conn, err
+		return conn, fmt.Errorf("gopher: failed to build selector: %w", err)
 	}
 
 	if _, err := conn.Write(buf.Bytes()); err != nil {
-		return conn, err
+		// XXX: We must make sure to return this error as-is so we can catch and retry in
+		// dialAndSend. We avoid errors.As because it introduces a bucketload of slow.
+		if tlserr, ok := err.(tls.RecordHeaderError); ok {
+			return conn, tlserr
+		}
+		return conn, fmt.Errorf("gopher: request selector write error: %w", err)
 	}
+
 	if body := rq.Body(); body != nil {
 		if _, err := io.Copy(conn, body); err != nil {
 			return conn, err
