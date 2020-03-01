@@ -4,8 +4,8 @@ import (
 	"image"
 	"io"
 
-	"github.com/shabbyrobe/fur/internal/gopher"
 	"github.com/shabbyrobe/fur/internal/imggeom"
+	"github.com/shabbyrobe/furlib/gopher"
 	"github.com/shabbyrobe/termimg"
 	"golang.org/x/image/draw"
 

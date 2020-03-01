@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/shabbyrobe/fur/internal/gopher"
+	"github.com/shabbyrobe/furlib/gopher"
 )
 
 // FlatDump is a brutally simple way of dumping a Gopher request that I've used for some

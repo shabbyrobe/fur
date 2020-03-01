@@ -1,6 +1,6 @@
 package main
 
-import "github.com/shabbyrobe/fur/internal/gopher"
+import "github.com/shabbyrobe/furlib/gopher"
 
 // Just pulled whatever the closest match is out of sysexits.h, for better or worse...
 // It'll do until some greybeard comes and yells at me for "holding it wrong".

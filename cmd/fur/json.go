@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/shabbyrobe/fur/internal/gopher"
+	"github.com/shabbyrobe/furlib/gopher"
 )
 
 type jsonDirRenderer struct {

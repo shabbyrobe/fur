@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/shabbyrobe/fur/internal/gopher"
+	"github.com/shabbyrobe/furlib/gopher"
 )
 
 type Ball struct {

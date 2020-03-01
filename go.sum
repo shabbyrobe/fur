@@ -4,9 +4,7 @@ github.com/bbrks/wrap v2.3.0+incompatible h1:9ebLuiUC/fBSu6OeOdD6XG8WRjf3G+wSJO1
 github.com/bbrks/wrap v2.3.0+incompatible/go.mod h1:rc//8Fguf02+4sm0fBMyG1TrAaEhe6VTYM35MY10oO4=
 github.com/cretz/bine v0.1.0 h1:1/fvhLE+fk0bPzjdO5Ci+0ComYxEMuB1JhM4X5skT3g=
 github.com/cretz/bine v0.1.0/go.mod h1:6PF6fWAvYtwjRGkAuDEJeWNOv3a2hUouSP/yRYXmvHw=
-github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fatih/color v1.9.0 h1:8xPHl4/q1VyqGIPif1F+1V3Y3lSmrq01EabUW3CoW5s=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
@@ -28,11 +26,10 @@ github.com/mattn/godown v0.0.0-20200217152941-afc959f6a561/go.mod h1:/ivCKurgV/b
 github.com/pkg/profile v1.4.0 h1:uCmaf4vVbWAOZz36k1hrQD7ijGRzLwaME8Am/7a4jZI=
 github.com/pkg/profile v1.4.0/go.mod h1:NWz/XGvpEW1FyYQ7fCx4dqYBLlfTcE+A9FLAkNKqjFE=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/shabbyrobe/cmdy v0.7.6 h1:iSxIKJvdb6DlI+5gdkTX/whUmPPT7lc1BVEFk1Ex2qk=
-github.com/shabbyrobe/cmdy v0.7.6/go.mod h1:xuN7RWhfcoDr0AYWQrh3woeghCZ3fehmIatRvSoBaDE=
 github.com/shabbyrobe/cmdy v0.7.7 h1:CiWBIXK0p69CTdUxj5dvhWyQnxeJA5Myvt5eXp5LRUQ=
 github.com/shabbyrobe/cmdy v0.7.7/go.mod h1:xuN7RWhfcoDr0AYWQrh3woeghCZ3fehmIatRvSoBaDE=
-github.com/shabbyrobe/golib v0.0.0-20200222021437-6658cb14cbf2 h1:CAibv08+FLH1nQ9+/jcr2N9gEppPVc2Gc8pTSi1d17o=
+github.com/shabbyrobe/furlib v0.0.0-20200301133319-5fd2c2d1ca86 h1:9YcRm3sPt21eiUfDCkSU0nCZWPPOsmEHHPSCzx7mFUk=
+github.com/shabbyrobe/furlib v0.0.0-20200301133319-5fd2c2d1ca86/go.mod h1:mqVpHcQ99QMT0HtA94GKXOq8H4xAkEDvxtPJmcPQPKg=
 github.com/shabbyrobe/golib/iotools v0.0.0-20200215042454-96cb28ef70ba h1:EEPaqZ88EerDOvP6wQH8ONgbeuOlolrD7gVSg2BsGmE=
 github.com/shabbyrobe/golib/iotools v0.0.0-20200215042454-96cb28ef70ba/go.mod h1:faoRxLdfSq7rm6UH+CSME+nQ5cw3KVI5xTAiT+uWKhs=
 github.com/shabbyrobe/golib/profiletools v0.0.0-20200222021437-6658cb14cbf2 h1:ZIHNgTFQgf3Jb2BuJtX9iyhmTzQR2k80/6cqGp3mlzg=

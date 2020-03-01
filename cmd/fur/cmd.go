@@ -18,7 +18,7 @@ import (
 	"github.com/shabbyrobe/cmdy/arg"
 	"github.com/shabbyrobe/cmdy/flags"
 	"github.com/shabbyrobe/fur/internal/furball"
-	"github.com/shabbyrobe/fur/internal/gopher"
+	"github.com/shabbyrobe/furlib/gopher"
 )
 
 const commandUsage = `

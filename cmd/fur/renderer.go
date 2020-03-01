@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/bbrks/wrap"
-	"github.com/shabbyrobe/fur/internal/gopher"
+	"github.com/shabbyrobe/furlib/gopher"
 )
 
 var defaultIcons = [256]rune{

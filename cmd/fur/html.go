@@ -7,8 +7,8 @@ import (
 	"os/exec"
 
 	"github.com/mattn/godown"
-	"github.com/shabbyrobe/fur/internal/gopher"
 	"github.com/shabbyrobe/fur/internal/mdhtml"
+	"github.com/shabbyrobe/furlib/gopher"
 )
 
 type htmlRenderer struct {
