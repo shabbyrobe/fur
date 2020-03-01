@@ -21,6 +21,8 @@ type Client struct {
 	CapsSource      CapsSource
 	TLSClientConfig *tls.Config
 	TLSMode         TLSMode
+
+	DialContext func(ctx context.Context, network, addr string) (net.Conn, error)
 }
 
 func (c *Client) timeoutDial() time.Duration {
@@ -40,8 +42,12 @@ func (c *Client) dial(ctx context.Context, rq *Request, tlsMode TLSMode) (net.Co
 		return nil, fmt.Errorf("gopher: cannot fetch URL %q", rq.url)
 	}
 
-	dialer := net.Dialer{Timeout: c.timeoutDial()}
-	conn, err := dialer.DialContext(ctx, "tcp", rq.url.Host())
+	var dial = c.DialContext
+	if dial == nil {
+		dialer := net.Dialer{Timeout: c.timeoutDial()}
+		dial = dialer.DialContext
+	}
+	conn, err := dial(ctx, "tcp", rq.url.Host())
 	if err != nil {
 		return nil, err
 	}

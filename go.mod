@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/MichaelMure/go-term-text v0.2.6
 	github.com/bbrks/wrap v2.3.0+incompatible
+	github.com/cretz/bine v0.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.9.0
 	github.com/gomarkdown/markdown v0.0.0-20200127000047-1813ea067497

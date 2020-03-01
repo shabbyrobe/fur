@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/cretz/bine/tor"
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/arg"
 	"github.com/shabbyrobe/cmdy/flags"
@@ -80,6 +82,7 @@ type command struct {
 	cols        int
 	ballFile    string
 	ball        *furball.Ball
+	tor         bool
 	spam        int
 	spamWorkers int
 }
@@ -144,6 +147,7 @@ func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.BoolVar(&cmd.insecure, "noverify", false, "Insecure TLS - skip hostname verification")
 	flags.BoolVar(&cmd.json, "j", false, "Render as JSON; will show base64 for binary, string for text and jsonl/ndjson for directories")
 	flags.BoolVar(&cmd.meta, "meta", false, "Request GopherIIbis metadata for this file")
+	flags.BoolVar(&cmd.tor, "tor", false, "Connect via TOR (VERY slow)")
 	flags.BoolVar(&cmd.allMeta, "allmeta", false, "Request GopherIIbis metadata for the entire directory")
 	flags.BoolVar(&cmd.outAutoFile, "O", false, "Output to file, infer name from selector")
 	flags.BoolVar(&cmd.tlsInsist, "tls", false, "Insist on TLS")
@@ -182,7 +186,8 @@ func (cmd *command) URL() (gopher.URL, error) {
 	return u, nil
 }
 
-func (cmd *command) Client() *gopher.Client {
+func (cmd *command) Client(ctx context.Context) (*gopher.Client, DoneFunc, error) {
+	done := nilDone
 	client := &gopher.Client{
 		Timeout: cmd.timeout,
 		TLSMode: gopher.TLSWithInsecure,
@@ -201,7 +206,21 @@ func (cmd *command) Client() *gopher.Client {
 		}
 	}
 
-	return client
+	if cmd.tor {
+		t, err := tor.Start(nil, nil)
+		if err != nil {
+			return nil, done, err
+		}
+		dialer, err := t.Dialer(ctx, nil)
+		if err != nil {
+			return nil, done, err
+		}
+		client.DialContext = dialer.DialContext
+
+		done = func() { t.Close() }
+	}
+
+	return client, done, nil
 }
 
 func (cmd *command) outFileName(u gopher.URL) string {
@@ -390,7 +409,11 @@ func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 		return err
 	}
 
-	client := cmd.Client()
+	client, done, err := cmd.Client(ctx)
+	defer done()
+	if err != nil {
+		return err
+	}
 
 	var gopherErr *gopher.Error
 
@@ -422,7 +445,11 @@ func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 }
 
 func (cmd *command) runRaw(ctx cmdy.Context, bin bool) (rerr error) {
-	client := cmd.Client()
+	client, done, err := cmd.Client(ctx)
+	defer done()
+	if err != nil {
+		return err
+	}
 
 	u, err := cmd.URL()
 	if err != nil {
@@ -479,7 +506,13 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 	if err != nil {
 		return err
 	}
-	client := cmd.Client()
+
+	client, done, err := cmd.Client(ctx)
+	defer done()
+	if err != nil {
+		return err
+	}
+
 	if client.TLSClientConfig == nil {
 		client.TLSClientConfig = &tls.Config{}
 	}
@@ -577,3 +610,7 @@ func (cmd *command) runSpam(ctx cmdy.Context) (rerr error) {
 
 	return nil
 }
+
+type DoneFunc func()
+
+var nilDone DoneFunc = func() {}
