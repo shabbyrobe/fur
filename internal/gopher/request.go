@@ -16,6 +16,11 @@ type Request struct {
 	// When a server accepts an actual connection, this will be set to the remote address.
 	// This field is ignored by the Gopher client.
 	RemoteAddr *net.TCPAddr
+
+	// Params is free to be set by your Server's Mux implementation. If you have
+	// requirements that this can't satisfy, use the dreaded context.WithValue()
+	// to add what you need.
+	Params Params
 }
 
 func NewRequest(url URL, body io.Reader) *Request {
@@ -83,4 +88,19 @@ func (r *Request) buildSelector(buf *bytes.Buffer) error {
 done:
 	buf.WriteString("\r\n")
 	return nil
+}
+
+type Params []Param
+
+type Param struct {
+	Key, Value string
+}
+
+func (params Params) Get(name string) string {
+	for _, param := range params {
+		if param.Key == name {
+			return param.Value
+		}
+	}
+	return ""
 }
