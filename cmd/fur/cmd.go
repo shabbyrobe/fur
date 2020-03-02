@@ -85,6 +85,7 @@ type command struct {
 	tor         bool
 	spam        int
 	spamWorkers int
+	stats       bool
 }
 
 func (cmd *command) Help() cmdy.Help {
@@ -150,6 +151,7 @@ func (cmd *command) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.BoolVar(&cmd.tor, "tor", false, "Connect via TOR (VERY slow)")
 	flags.BoolVar(&cmd.allMeta, "allmeta", false, "Request GopherIIbis metadata for the entire directory")
 	flags.BoolVar(&cmd.outAutoFile, "O", false, "Output to file, infer name from selector")
+	flags.BoolVar(&cmd.stats, "stats", true, "Print stats to stderr after render")
 	flags.BoolVar(&cmd.tlsInsist, "tls", false, "Insist on TLS")
 	flags.BoolVar(&cmd.tlsDisabled, "notls", false, "Do not attempt to automatically connect using TLS")
 	flags.DurationVar(&cmd.timeout, "t", 20*time.Second, "Timeout")
@@ -337,7 +339,7 @@ func (cmd *command) selectJSONRenderer(rs gopher.Response) (rnd renderer, allowD
 	case *gopher.UUEncodedResponse:
 		rnd = &jsonBinaryRenderer{}
 	default:
-		return nil, false, fmt.Errorf("unknown response type %s", rs.Request().URL().ItemType)
+		return nil, false, fmt.Errorf("unknown response type %s", rs.Info().URL().ItemType)
 	}
 
 	return rnd, allowDefaultStdout, nil
@@ -346,7 +348,7 @@ func (cmd *command) selectJSONRenderer(rs gopher.Response) (rnd renderer, allowD
 func (cmd *command) selectTextRenderer(rs gopher.Response) (rnd renderer, allowDefaultStdout bool, err error) {
 	cols, _ := cmd.termSize()
 
-	url := rs.Request().URL()
+	url := rs.Info().URL()
 
 	allowDefaultStdout = true
 	switch rs.(type) {
@@ -417,6 +419,8 @@ func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 
 	var gopherErr *gopher.Error
 
+	start := time.Now()
+
 	rs, err := client.Fetch(ctx, rq)
 	if errors.As(err, &gopherErr) {
 		return cmdy.ErrWithCode(exitCode(gopherErr.Status, 2), err)
@@ -441,7 +445,15 @@ func (cmd *command) runClient(ctx cmdy.Context) (rerr error) {
 		fmt.Fprintf(ctx.Stderr(), "writing to %q\n", outFile)
 	}
 
-	return rnd.Render(out, rs)
+	if err := rnd.Render(out, rs); err != nil {
+		return nil
+	}
+
+	taken := time.Since(start)
+	if cmd.stats {
+		fmt.Fprintf(ctx.Stderr(), "  -- took %s, tls: %v --  \n", taken, rs.Info().TLS != nil)
+	}
+	return nil
 }
 
 func (cmd *command) runRaw(ctx cmdy.Context, bin bool) (rerr error) {

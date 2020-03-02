@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-tty v0.0.3
 	github.com/mattn/godown v0.0.0-20200217152941-afc959f6a561
 	github.com/shabbyrobe/cmdy v0.7.7
-	github.com/shabbyrobe/furlib v0.0.0-20200301133319-5fd2c2d1ca86
+	github.com/shabbyrobe/furlib v0.0.0-20200302110116-914d9b2f5d8e
 	github.com/shabbyrobe/golib/profiletools v0.0.0-20200222021437-6658cb14cbf2
 	github.com/shabbyrobe/termimg v0.0.0-20200211052354-57461d77496f
 	golang.org/x/image v0.0.0-20200119044424-58c23975cae1
