@@ -13,34 +13,17 @@ type jsonDirRenderer struct {
 	items [256]bool
 }
 
-type jsonEntry struct {
-	ItemType string `json:"type"`
-	Display  string `json:"display"`
-	URL      string `json:"url"`
-	Raw      string `json:"raw,omitempty"`
-	Plus     bool   `json:"plus"`
-	Hostname string `json:"hostname"`
-	Port     string `json:"port"`
-}
-
 var _ renderer = &jsonDirRenderer{}
 
 func (jd *jsonDirRenderer) Render(out io.Writer, rs gopher.Response) error {
 	rrs := rs.(*gopher.DirResponse)
 	enc := json.NewEncoder(out)
 	var dirent gopher.Dirent
-	var jent jsonEntry
 	for rrs.Next(&dirent) {
 		if !jd.items[dirent.ItemType] {
 			continue
 		}
-		jent.ItemType = string(rune(dirent.ItemType))
-		jent.Display = dirent.Display
-		jent.URL = dirent.URL.String()
-		jent.Plus = dirent.Plus
-		jent.Hostname = dirent.URL.Hostname
-		jent.Port = dirent.URL.Port
-		if err := enc.Encode(&jent); err != nil {
+		if err := enc.Encode(&dirent); err != nil {
 			return err
 		}
 	}

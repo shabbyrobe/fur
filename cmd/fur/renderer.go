@@ -122,9 +122,9 @@ func (d *dirRenderer) Render(out io.Writer, rs gopher.Response) error {
 				fmt.Fprintf(out, "%c ", c)
 			}
 
-			urlStr, ok := dirent.URL.WWW()
+			urlStr, ok := dirent.WWW()
 			if !ok {
-				urlStr = dirent.URL.String()
+				urlStr = dirent.URL().String()
 			}
 
 			lwspn := lwspCount(dirent.Display)

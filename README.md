@@ -74,9 +74,10 @@ HTML item types (`h`) work best if you have `w3m` installed.
 ### Gopher articles of interest:
 
 - https://jfm.carcosa.net/blog/computing/hugo-gopher/
+- gopher://baud.baby/0/phlog/fs20181102.txt
 
 
-### Server software:
+### Server:
 
 - https://github.com/gophernicus/gophernicus
 - https://github.com/muffinista/gopher2000/
@@ -91,6 +92,7 @@ HTML item types (`h`) work best if you have `w3m` installed.
 - http://r-36.net/scm/geomyidae/file/CGI.html ([MIT/X](http://r-36.net/scm/geomyidae/file/LICENSE.html), Basic Gopher+ meta)
 - http://aftershock.sourceforge.net/ (Ancient, Java)
 - http://mateusz.viste.fr/attic/grumpy/ (GPL, last updated 2011)
+- https://github.com/prologic/cgod
 
 
 ### Gopher protocol:
@@ -117,6 +119,7 @@ STARTTLS.
 - https://news.ycombinator.com/item?id=16811407
 - gopher://tilde.team/0/~rain1/phlog/20190608-encrypting-gopher.txt
 - https://lists.debian.org/gopher-project/2018/02/msg00038.html
+- https://gopher-project.alioth.debian.narkive.com/9VYGBcDp/adding-tls-and-or-ssl-support-to-gopher
 
 
 ### Crawlers:
