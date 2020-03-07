@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-tty v0.0.3
 	github.com/mattn/godown v0.0.0-20200217152941-afc959f6a561
 	github.com/shabbyrobe/cmdy v0.7.7
-	github.com/shabbyrobe/furlib v0.0.0-20200306085101-f8d20e052bd4
+	github.com/shabbyrobe/furlib v0.0.0-20200307042843-dc8c21ba6e2f
 	github.com/shabbyrobe/golib/profiletools v0.0.0-20200222021437-6658cb14cbf2
 	github.com/shabbyrobe/imgx/termpalette v0.0.0-20200307030904-8093a71ec74e // indirect
 	github.com/shabbyrobe/termimg v0.0.0-20200307034608-265ceb1ad3a3
@@ -20,5 +20,3 @@ require (
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 )
-
-replace github.com/shabbyrobe/furlib => ../furlib
