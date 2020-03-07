@@ -49,10 +49,16 @@ func (d *imageRenderer) Render(out io.Writer, rs gopher.Response) error {
 	}
 
 	var data termimg.EscapeData
-	if err := termimg.Encode(&data, img, 0, nil); err != nil {
+	var rend, _ = termimg.PresetBitmapBlock().Renderer()
+	if err := rend.Escapes(&data, img, 0); err != nil {
 		return nil
 	}
 
-	_, err = out.Write(data.Value())
-	return err
+	if _, err := out.Write(data.Value()); err != nil {
+		return err
+	}
+
+	out.Write([]byte("\033[0m\n"))
+
+	return nil
 }

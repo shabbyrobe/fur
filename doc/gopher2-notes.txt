@@ -9,9 +9,16 @@
 
 - CR/LF: this is overprescribed for textual content. It's an easy detail to
   miss, and a lot of gopher scripts just hoof whatever file they find over the
-  wire without even bothering to dot-encode. CR/LF and LF should both be
-  allowed. If servers _should_ use CR/LF, but clients have no choice but to
+  wire without even bothering to dot-encode. Should CR/LF and LF should both be
+  allowed? If servers _should_ use CR/LF, but clients have no choice but to
   adapt to whatever they get, why prescribe it in the first place?
+
+  - GopherII makes it worse: 5.1: Clients SHOULD NOT consider a full stop
+    significant, unless it occurs immediately before the connection is
+    terminated.
+
+  - GopherII also uses the term "full stop", we should standardi[sz]e on 
+    American and at least reference the term "period", if not use it everywhere.
 
 - Caps file should have entries indicating Gopher+, GopherII and GopherIIbis
   support, this should be in the RFC.
